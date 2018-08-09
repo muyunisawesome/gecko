@@ -1,5 +1,5 @@
 #介绍
-		Gecko是一个Java NIO的通讯组件，它在一个轻量级的NIO框架的基础上提供了更高层次的封装和功能。支持的RPC调用方式包括RR(request-response)和pipeline。
+		Gecko是一个Java NIO的通讯组件，它在一个轻量级的NIO框架(称之为notify-remoting)的基础上提供了更高层次的封装和功能。支持的RPC调用方式包括RR(request-response)和pipeline。
 
 #特性
 
