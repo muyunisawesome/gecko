@@ -30,14 +30,14 @@ import com.taobao.gecko.service.config.ServerConfig;
  * @since 1.0, 2009-12-15 上午11:11:29
  */
 
-public interface RemotingServer extends RemotingController {
+ public interface RemotingServer extends RemotingController {
 
     /**
      * 设置服务器配置，包括端口、TCP选项等
      * 
      * @param serverConfig
      */
-    public void setServerConfig(ServerConfig serverConfig);
+     void setServerConfig(ServerConfig serverConfig);
 
 
     /**
@@ -45,7 +45,7 @@ public interface RemotingServer extends RemotingController {
      * 
      * @return
      */
-    public URI getConnectURI();
+     URI getConnectURI();
 
 
     /**
@@ -53,6 +53,6 @@ public interface RemotingServer extends RemotingController {
      * 
      * @return
      */
-    public InetSocketAddress getInetSocketAddress();
+     InetSocketAddress getInetSocketAddress();
 
 }

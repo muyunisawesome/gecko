@@ -35,10 +35,10 @@ public interface Controller {
     long getSessionTimeout();
 
 
-    public long getSessionIdleTimeout();
+    long getSessionIdleTimeout();
 
 
-    public void setSessionIdleTimeout(long sessionIdleTimeout);
+    void setSessionIdleTimeout(long sessionIdleTimeout);
 
 
     void setSessionTimeout(long sessionTimeout);
@@ -53,7 +53,7 @@ public interface Controller {
     void addStateListener(ControllerStateListener listener);
 
 
-    public void removeStateListener(ControllerStateListener listener);
+    void removeStateListener(ControllerStateListener listener);
 
 
     boolean isHandleReadWriteConcurrently();

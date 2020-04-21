@@ -24,9 +24,10 @@ package com.taobao.gecko.core.core;
  * 
  * @since 1.0, 2009-12-16 обнГ06:00:01
  */
-public interface Dispatcher {
-    public void dispatch(Runnable r);
+ public interface Dispatcher {
+
+     void dispatch(Runnable r);
 
 
-    public void stop();
+     void stop();
 }

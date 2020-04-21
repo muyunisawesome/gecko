@@ -30,11 +30,11 @@ import com.taobao.gecko.core.buffer.IoBuffer;
 public interface CodecFactory {
 
     interface Encoder {
-        public IoBuffer encode(Object message, Session session);
+        IoBuffer encode(Object message, Session session);
     }
 
     interface Decoder {
-        public Object decode(IoBuffer buff, Session session);
+        Object decode(IoBuffer buff, Session session);
     }
 
 

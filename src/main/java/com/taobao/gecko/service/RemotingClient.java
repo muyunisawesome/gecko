@@ -36,31 +36,32 @@ public interface RemotingClient extends RemotingController {
     /**
      * 根据URL连接服务端，如果连接失败将转入重连模式
      * 
-     * @param group
+     * @param url
      *            服务端的URL，形如schema://host:port的字符串
      * @throws IOException
      */
-    public void connect(String url) throws NotifyRemotingException;
+    void connect(String url) throws NotifyRemotingException;
 
 
     /**
      * 等待连接就绪，可中断，连接就绪的含义如下：是指指定分组的有效连接数达到设定值，并且可用。默认等待超时为连接数乘以连接超时
      * 
-     * @param group
+     * @param url
      * @throws NotifyRemotingException
      * @throws InterruptedException
      */
-    public void awaitReadyInterrupt(String url) throws NotifyRemotingException, InterruptedException;
+    void awaitReadyInterrupt(String url) throws NotifyRemotingException, InterruptedException;
 
 
     /**
      * 等待连接就绪，可中断，连接就绪的含义如下：是指指定分组的有效连接数达到设定值，并且可用。默认等待超时为连接数乘以连接超时
      * 
-     * @param group
+     * @param url
+     * @param time
      * @throws NotifyRemotingException
      * @throws InterruptedException
      */
-    public void awaitReadyInterrupt(String url, long time) throws NotifyRemotingException, InterruptedException;
+    void awaitReadyInterrupt(String url, long time) throws NotifyRemotingException, InterruptedException;
 
 
     /**
@@ -70,7 +71,7 @@ public interface RemotingClient extends RemotingController {
      * @param time
      * @throws InterruptedException
      */
-    public void awaitClosed(String url, long time) throws InterruptedException, TimeoutException;
+    void awaitClosed(String url, long time) throws InterruptedException, TimeoutException;
 
 
     /**
@@ -79,7 +80,7 @@ public interface RemotingClient extends RemotingController {
      * @param url
      * @throws InterruptedException
      */
-    public void awaitClosed(String url) throws InterruptedException, TimeoutException;
+    void awaitClosed(String url) throws InterruptedException, TimeoutException;
 
 
     /**
@@ -89,7 +90,7 @@ public interface RemotingClient extends RemotingController {
      *            服务端的URL，形如schema://host:port的字符串
      * @throws IOException
      */
-    public void connect(String url, int connCount) throws NotifyRemotingException;
+    void connect(String url, int connCount) throws NotifyRemotingException;
 
 
     /**
@@ -103,7 +104,7 @@ public interface RemotingClient extends RemotingController {
      *            连接数
      * @throws IOException
      */
-    public void connect(String url, String targetGroup, int connCount) throws NotifyRemotingException;
+    void connect(String url, String targetGroup, int connCount) throws NotifyRemotingException;
 
 
     /**
@@ -113,7 +114,7 @@ public interface RemotingClient extends RemotingController {
      * @param targetGroup
      * @throws NotifyRemotingException
      */
-    public void connect(String url, String targetGroup) throws NotifyRemotingException;
+    void connect(String url, String targetGroup) throws NotifyRemotingException;
 
 
     /**
@@ -123,7 +124,7 @@ public interface RemotingClient extends RemotingController {
      *            服务端的url，形如schema://host:port的字符串
      * @return
      */
-    public InetSocketAddress getRemoteAddress(String url);
+    InetSocketAddress getRemoteAddress(String url);
 
 
     /**
@@ -133,7 +134,7 @@ public interface RemotingClient extends RemotingController {
      *            服务端的group，形如schema://host:port的字符串
      * @return
      */
-    public String getRemoteAddressString(String url);
+    String getRemoteAddressString(String url);
 
 
     /**
@@ -143,7 +144,7 @@ public interface RemotingClient extends RemotingController {
      *            服务端的url，形如schema://host:port的字符串
      * @return
      */
-    public boolean isConnected(String url);
+    boolean isConnected(String url);
 
 
     /**
@@ -156,7 +157,7 @@ public interface RemotingClient extends RemotingController {
      * @throws NotifyRemotingException
      * 
      */
-    public void close(String url, boolean allowReconnect) throws NotifyRemotingException;
+    void close(String url, boolean allowReconnect) throws NotifyRemotingException;
 
 
     /**
@@ -164,6 +165,6 @@ public interface RemotingClient extends RemotingController {
      * 
      * @param clientConfig
      */
-    public void setClientConfig(ClientConfig clientConfig);
+    void setClientConfig(ClientConfig clientConfig);
 
 }

@@ -46,7 +46,7 @@ public interface Connection {
      * 
      * @return
      */
-    public RemotingContext getRemotingContext();
+    RemotingContext getRemotingContext();
 
 
     /**
@@ -56,7 +56,7 @@ public interface Connection {
      *            如果true，则允许自动重连
      * @throws NotifyRemotingException
      */
-    public void close(boolean allowReconnect) throws NotifyRemotingException;
+    void close(boolean allowReconnect) throws NotifyRemotingException;
 
 
     /**
@@ -64,20 +64,20 @@ public interface Connection {
      * 
      * @return
      */
-    public boolean isConnected();
+    boolean isConnected();
 
 
     /**
      * 同步调用，指定超时时间
      * 
      * @param requestCommand
-     * @param timeConnection
+     * @param time
      * @param timeUnit
      * @return
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public ResponseCommand invoke(final RequestCommand requestCommand, long time, TimeUnit timeUnit)
+    ResponseCommand invoke(final RequestCommand requestCommand, long time, TimeUnit timeUnit)
             throws InterruptedException, TimeoutException, NotifyRemotingException;
 
 
@@ -89,7 +89,7 @@ public interface Connection {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public ResponseCommand invoke(final RequestCommand request) throws InterruptedException, TimeoutException,
+    ResponseCommand invoke(final RequestCommand request) throws InterruptedException, TimeoutException,
             NotifyRemotingException;
 
 
@@ -99,7 +99,7 @@ public interface Connection {
      * @param requestCommand
      * @param listener
      */
-    public void send(final RequestCommand requestCommand, SingleRequestCallBackListener listener)
+    void send(final RequestCommand requestCommand, SingleRequestCallBackListener listener)
             throws NotifyRemotingException;
 
 
@@ -109,7 +109,7 @@ public interface Connection {
      * @param requestCommand
      * @param listener
      */
-    public void send(final RequestCommand requestCommand, SingleRequestCallBackListener listener, long time,
+    void send(final RequestCommand requestCommand, SingleRequestCallBackListener listener, long time,
             TimeUnit timeUnit) throws NotifyRemotingException;
 
 
@@ -118,7 +118,7 @@ public interface Connection {
      * 
      * @param requestCommand
      */
-    public void send(final RequestCommand requestCommand) throws NotifyRemotingException;
+    void send(final RequestCommand requestCommand) throws NotifyRemotingException;
 
 
     /**
@@ -128,7 +128,7 @@ public interface Connection {
      * @return
      * @throws NotifyRemotingException
      */
-    public Future<Boolean> asyncSend(final RequestCommand requestCommand) throws NotifyRemotingException;
+    Future<Boolean> asyncSend(final RequestCommand requestCommand) throws NotifyRemotingException;
 
 
     /**
@@ -136,13 +136,13 @@ public interface Connection {
      * 
      * @param responseCommand
      */
-    public void response(final Object responseCommand) throws NotifyRemotingException;
+    void response(final Object responseCommand) throws NotifyRemotingException;
 
 
     /**
      * 清除连接的所有属性
      */
-    public void clearAttributes();
+    void clearAttributes();
 
 
     /**
@@ -151,7 +151,7 @@ public interface Connection {
      * @param key
      * @return
      */
-    public Object getAttribute(String key);
+    Object getAttribute(String key);
 
 
     /**
@@ -159,7 +159,7 @@ public interface Connection {
      * 
      * @return
      */
-    public InetSocketAddress getRemoteSocketAddress();
+    InetSocketAddress getRemoteSocketAddress();
 
 
     /**
@@ -167,7 +167,7 @@ public interface Connection {
      * 
      * @return
      */
-    public InetAddress getLocalAddress();
+    InetAddress getLocalAddress();
 
 
     /**
@@ -175,7 +175,7 @@ public interface Connection {
      * 
      * @param key
      */
-    public void removeAttribute(String key);
+    void removeAttribute(String key);
 
 
     /**
@@ -184,7 +184,7 @@ public interface Connection {
      * @param key
      * @param value
      */
-    public void setAttribute(String key, Object value);
+    void setAttribute(String key, Object value);
 
 
     /**
@@ -193,7 +193,7 @@ public interface Connection {
      * @since 1.8.3
      * @return
      */
-    public Set<String> attributeKeySet();
+    Set<String> attributeKeySet();
 
 
     /**
@@ -201,16 +201,15 @@ public interface Connection {
      * 
      * @param byteOrder
      */
-    public void readBufferOrder(ByteOrder byteOrder);
+    void readBufferOrder(ByteOrder byteOrder);
 
 
     /**
      * 获取连接的读缓冲区的字节序
      * 
-     * @param byteOrder
      * @return TODO
      */
-    public ByteOrder readBufferOrder();
+    ByteOrder readBufferOrder();
 
 
     /**
@@ -220,7 +219,7 @@ public interface Connection {
      * @param value
      * @return
      */
-    public Object setAttributeIfAbsent(String key, Object value);
+    Object setAttributeIfAbsent(String key, Object value);
 
 
     /**
@@ -228,7 +227,7 @@ public interface Connection {
      * 
      * @return
      */
-    public Set<String> getGroupSet();
+    Set<String> getGroupSet();
 
 
     /**
@@ -238,7 +237,7 @@ public interface Connection {
      * @param writeInterruptibly
      *            true——启用 false——不启用
      */
-    public void setWriteInterruptibly(boolean writeInterruptibly);
+    void setWriteInterruptibly(boolean writeInterruptibly);
 
 
     /**
@@ -253,7 +252,7 @@ public interface Connection {
      * @param size
      * @since 1.8.3
      */
-    public void transferFrom(IoBuffer head, IoBuffer tail, FileChannel channel, long position, long size);
+    void transferFrom(IoBuffer head, IoBuffer tail, FileChannel channel, long position, long size);
 
 
     /**
@@ -273,7 +272,7 @@ public interface Connection {
      * @param unit
      * @since 1.1.0
      */
-    public void transferFrom(IoBuffer head, IoBuffer tail, FileChannel channel, long position, long size,
+    void transferFrom(IoBuffer head, IoBuffer tail, FileChannel channel, long position, long size,
             Integer opaque, SingleRequestCallBackListener listener, long time, TimeUnit unit)
             throws NotifyRemotingException;
 

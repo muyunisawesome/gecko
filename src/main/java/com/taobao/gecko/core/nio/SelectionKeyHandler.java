@@ -40,24 +40,24 @@ import com.taobao.gecko.core.nio.impl.TimerRef;
  * @author dennis
  * 
  */
-public interface SelectionKeyHandler {
-    public void onAccept(SelectionKey sk) throws IOException;
+ public interface SelectionKeyHandler {
+     void onAccept(SelectionKey sk) throws IOException;
 
 
-    public void closeSelectionKey(SelectionKey key);
+     void closeSelectionKey(SelectionKey key);
 
 
-    public void onWrite(SelectionKey key);
+     void onWrite(SelectionKey key);
 
 
-    public void onRead(SelectionKey key);
+     void onRead(SelectionKey key);
 
 
-    public void onTimeout(TimerRef timerRef);
+     void onTimeout(TimerRef timerRef);
 
 
-    public void onConnect(SelectionKey key) throws IOException;
+     void onConnect(SelectionKey key) throws IOException;
 
 
-    public void closeChannel(Selector selector) throws IOException;
+     void closeChannel(Selector selector) throws IOException;
 }

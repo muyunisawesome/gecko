@@ -28,7 +28,7 @@ public class ClientConfig extends BaseConfig {
 
     public ClientConfig() {
         super();
-        // 设置判断连接空闲时间为10秒
+        // 设置 判断连接空闲时间为10秒
         this.setIdleTime(10);
         this.setMaxCallBackCount(100000);
         this.setSelectorPoolSize(Runtime.getRuntime().availableProcessors());

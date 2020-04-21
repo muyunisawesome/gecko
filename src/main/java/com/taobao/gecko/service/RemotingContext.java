@@ -41,7 +41,7 @@ public interface RemotingContext {
      * @param connection
      * @return
      */
-    public abstract boolean addConnectionToGroup(String group, Connection connection);
+    boolean addConnectionToGroup(String group, Connection connection);
 
 
     /**
@@ -49,7 +49,7 @@ public interface RemotingContext {
      * 
      * @return
      */
-    public abstract BaseConfig getConfig();
+    BaseConfig getConfig();
 
 
     /**
@@ -57,7 +57,7 @@ public interface RemotingContext {
      * 
      * @param connection
      */
-    public abstract void addConnection(Connection connection);
+    void addConnection(Connection connection);
 
 
     /**
@@ -65,7 +65,7 @@ public interface RemotingContext {
      * 
      * @param connection
      */
-    public abstract void removeConnection(Connection connection);
+    void removeConnection(Connection connection);
 
 
     /**
@@ -74,7 +74,7 @@ public interface RemotingContext {
      * @param group
      * @return
      */
-    public abstract List<Connection> getConnectionsByGroup(String group);
+    List<Connection> getConnectionsByGroup(String group);
 
 
     /**
@@ -84,28 +84,28 @@ public interface RemotingContext {
      * @param connection
      * @return
      */
-    public abstract boolean removeConnectionFromGroup(String group, Connection connection);
+    boolean removeConnectionFromGroup(String group, Connection connection);
 
 
-    public abstract Object getAttribute(Object key, Object defaultValue);
+    Object getAttribute(Object key, Object defaultValue);
 
 
-    public abstract Object getAttribute(Object key);
+    Object getAttribute(Object key);
 
 
-    public abstract Set<Object> getAttributeKeys();
+    Set<Object> getAttributeKeys();
 
 
-    public abstract Object setAttribute(Object key, Object value);
+    Object setAttribute(Object key, Object value);
 
 
-    public abstract Object setAttributeIfAbsent(Object key, Object value);
+    Object setAttributeIfAbsent(Object key, Object value);
 
 
-    public abstract Object setAttributeIfAbsent(Object key);
+    Object setAttributeIfAbsent(Object key);
 
 
-    public void awaitGroupConnectionsEmpty(String group, long time) throws InterruptedException, TimeoutException;
+    void awaitGroupConnectionsEmpty(String group, long time) throws InterruptedException, TimeoutException;
 
 
     /**
@@ -113,7 +113,7 @@ public interface RemotingContext {
      * 
      * @return
      */
-    public Set<String> getGroupSet();
+    Set<String> getGroupSet();
 
 
     /**
@@ -121,6 +121,6 @@ public interface RemotingContext {
      * 
      * @return
      */
-    public CommandFactory getCommandFactory();
+    CommandFactory getCommandFactory();
 
 }

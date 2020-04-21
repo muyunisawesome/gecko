@@ -39,7 +39,7 @@ public interface RequestProcessor<T extends RequestCommand> {
      * @param conn
      *            请求来源的连接
      */
-    public void handleRequest(T request, Connection conn);
+    void handleRequest(T request, Connection conn);
 
 
     /**
@@ -47,5 +47,5 @@ public interface RequestProcessor<T extends RequestCommand> {
      * 
      * @return
      */
-    public ThreadPoolExecutor getExecutor();
+    ThreadPoolExecutor getExecutor();
 }

@@ -31,9 +31,9 @@ import com.taobao.gecko.core.buffer.IoBuffer;
  */
 public interface ByteBufferMatcher {
 
-    public int matchFirst(IoBuffer buffer);
+    int matchFirst(IoBuffer buffer);
 
 
-    public List<Integer> matchAll(final IoBuffer buffer);
+    List<Integer> matchAll(final IoBuffer buffer);
 
 }

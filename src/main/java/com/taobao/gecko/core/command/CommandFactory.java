@@ -37,7 +37,7 @@ public interface CommandFactory {
      *            ¥ÌŒÛ–≈œ¢
      * @return
      */
-    public BooleanAckCommand createBooleanAckCommand(CommandHeader request, ResponseStatus responseStatus,
+    BooleanAckCommand createBooleanAckCommand(CommandHeader request, ResponseStatus responseStatus,
             String errorMsg);
 
 
@@ -46,6 +46,6 @@ public interface CommandFactory {
      * 
      * @return
      */
-    public HeartBeatRequestCommand createHeartBeatCommand();
+    HeartBeatRequestCommand createHeartBeatCommand();
 
 }

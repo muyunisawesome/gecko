@@ -29,19 +29,19 @@ import java.util.concurrent.Future;
  * @since 1.0, 2009-12-25 ÏÂÎç01:12:47
  */
 
-public interface SingleConnector {
+ public interface SingleConnector {
 
-    public Future<Boolean> connect(SocketAddress socketAddress,Object...args) throws IOException;
-
-
-    public Future<Boolean> send(Object msg);
+     Future<Boolean> connect(SocketAddress socketAddress,Object...args) throws IOException;
 
 
-    public boolean isConnected();
+     Future<Boolean> send(Object msg);
 
 
-    public void awaitConnectUnInterrupt() throws IOException;
+     boolean isConnected();
 
 
-    public void disconnect() throws IOException;
+     void awaitConnectUnInterrupt() throws IOException;
+
+
+     void disconnect() throws IOException;
 }

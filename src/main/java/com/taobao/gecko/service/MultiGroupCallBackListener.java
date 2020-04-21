@@ -32,8 +32,8 @@ import com.taobao.gecko.core.command.ResponseCommand;
 
 public interface MultiGroupCallBackListener {
 
-    public void onResponse(Map<String/* group */, ResponseCommand> groupResponses, Object... args);
+    void onResponse(Map<String/* group */, ResponseCommand> groupResponses, Object... args);
 
 
-    public ThreadPoolExecutor getExecutor();
+    ThreadPoolExecutor getExecutor();
 }

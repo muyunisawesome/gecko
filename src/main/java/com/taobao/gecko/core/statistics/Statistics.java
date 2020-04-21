@@ -24,78 +24,78 @@ package com.taobao.gecko.core.statistics;
  * 
  * @since 1.0, 2009-12-16 ÏÂÎç06:19:27
  */
-public interface Statistics {
+ public interface Statistics {
 
-    public void start();
-
-
-    public void stop();
+     void start();
 
 
-    public double getReceiveBytesPerSecond();
+     void stop();
 
 
-    public double getSendBytesPerSecond();
+     double getReceiveBytesPerSecond();
 
 
-    public abstract void statisticsProcess(long n);
+     double getSendBytesPerSecond();
 
 
-    public abstract long getProcessedMessageCount();
+     void statisticsProcess(long n);
 
 
-    public abstract double getProcessedMessageAverageTime();
+     long getProcessedMessageCount();
 
 
-    public abstract void statisticsRead(long n);
+     double getProcessedMessageAverageTime();
 
 
-    public abstract void statisticsWrite(long n);
+     void statisticsRead(long n);
 
 
-    public abstract long getRecvMessageCount();
+     void statisticsWrite(long n);
 
 
-    public abstract long getRecvMessageTotalSize();
+     long getRecvMessageCount();
 
 
-    public abstract long getRecvMessageAverageSize();
+     long getRecvMessageTotalSize();
 
 
-    public abstract long getWriteMessageTotalSize();
+     long getRecvMessageAverageSize();
 
 
-    public abstract long getWriteMessageCount();
+     long getWriteMessageTotalSize();
 
 
-    public abstract long getWriteMessageAverageSize();
+     long getWriteMessageCount();
 
 
-    public abstract double getRecvMessageCountPerSecond();
+     long getWriteMessageAverageSize();
 
 
-    public abstract double getWriteMessageCountPerSecond();
+     double getRecvMessageCountPerSecond();
 
 
-    public void statisticsAccept();
+     double getWriteMessageCountPerSecond();
 
 
-    public double getAcceptCountPerSecond();
+     void statisticsAccept();
 
 
-    public long getStartedTime();
+     double getAcceptCountPerSecond();
 
 
-    public void reset();
+     long getStartedTime();
 
 
-    public void restart();
+     void reset();
 
 
-    public boolean isStatistics();
+     void restart();
 
 
-    public void setReceiveThroughputLimit(double receiveThroughputLimit);
+     boolean isStatistics();
+
+
+     void setReceiveThroughputLimit(double receiveThroughputLimit);
 
 
     /**
@@ -103,9 +103,9 @@ public interface Statistics {
      * 
      * @return
      */
-    public boolean isReceiveOverFlow();
+     boolean isReceiveOverFlow();
 
 
-    public double getReceiveThroughputLimit();
+     double getReceiveThroughputLimit();
 
 }

@@ -27,6 +27,6 @@ public interface CommandHeader extends Command {
      * 
      * @return
      */
-    public Integer getOpaque();
+    Integer getOpaque();
 
 }

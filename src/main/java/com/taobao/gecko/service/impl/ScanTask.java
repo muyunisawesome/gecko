@@ -33,5 +33,5 @@ public interface ScanTask {
      * @param conn
      *            当前扫描到的连接
      */
-    public void visit(long now, Connection conn);
+    void visit(long now, Connection conn);
 }

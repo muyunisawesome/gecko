@@ -37,14 +37,14 @@ import com.taobao.gecko.service.exception.NotifyRemotingException;
  * @since 1.0, 2009-12-16 下午02:15:02
  */
 
-public interface RemotingController {
+ public interface RemotingController {
 
     /**
      * 设置连接选择器，默认为随机选择器
      * 
      * @param selector
      */
-    public void setConnectionSelector(ConnectionSelector selector);
+     void setConnectionSelector(ConnectionSelector selector);
 
 
     /**
@@ -53,7 +53,7 @@ public interface RemotingController {
      * @throws NotifyRemotingException
      * 
      */
-    public void start() throws NotifyRemotingException;
+     void start() throws NotifyRemotingException;
 
 
     /**
@@ -62,7 +62,7 @@ public interface RemotingController {
      * @throws NotifyRemotingException
      * 
      */
-    public void stop() throws NotifyRemotingException;
+     void stop() throws NotifyRemotingException;
 
 
     /**
@@ -70,7 +70,7 @@ public interface RemotingController {
      * 
      * @return
      */
-    public boolean isStarted();
+     boolean isStarted();
 
 
     /**
@@ -80,7 +80,7 @@ public interface RemotingController {
      * @param commandClazz
      * @param processor
      */
-    public <T extends RequestCommand> void registerProcessor(Class<T> commandClazz, RequestProcessor<T> processor);
+     <T extends RequestCommand> void registerProcessor(Class<T> commandClazz, RequestProcessor<T> processor);
 
 
     /**
@@ -89,7 +89,7 @@ public interface RemotingController {
      * @param clazz
      * @return
      */
-    public RequestProcessor<? extends RequestCommand> getProcessor(Class<? extends RequestCommand> clazz);
+     RequestProcessor<? extends RequestCommand> getProcessor(Class<? extends RequestCommand> clazz);
 
 
     /**
@@ -98,29 +98,23 @@ public interface RemotingController {
      * @param clazz
      * @return
      */
-    public RequestProcessor<? extends RequestCommand> unreigsterProcessor(Class<? extends RequestCommand> clazz);
+     RequestProcessor<? extends RequestCommand> unreigsterProcessor(Class<? extends RequestCommand> clazz);
 
 
     /**
      * 批量添加请求处理器
      * 
-     * @param <T>
      * @param map
      */
-    public void addAllProcessors(Map<Class<? extends RequestCommand>, RequestProcessor<? extends RequestCommand>> map);
+     void addAllProcessors(Map<Class<? extends RequestCommand>, RequestProcessor<? extends RequestCommand>> map);
 
 
     /**
      * 添加一个定时器
      * 
-     * @param timeout
-     *            超时的时间
-     * @param timeUnit
-     *            时间单位
-     * @param runnable
-     *            超时执行的任务
+     * @param timerRef
      */
-    public void insertTimer(TimerRef timerRef);
+     void insertTimer(TimerRef timerRef);
 
 
     /**
@@ -137,7 +131,7 @@ public interface RemotingController {
      * @param args
      *            附件
      */
-    public void sendToGroups(Map<String, RequestCommand> groupObjects, MultiGroupCallBackListener listener,
+     void sendToGroups(Map<String, RequestCommand> groupObjects, MultiGroupCallBackListener listener,
             long timeout, TimeUnit timeUnit, Object... args) throws NotifyRemotingException;
 
 
@@ -146,7 +140,7 @@ public interface RemotingController {
      * 
      * @param groupObjects
      */
-    public void sendToGroups(Map<String, RequestCommand> groupObjects) throws NotifyRemotingException;
+     void sendToGroups(Map<String, RequestCommand> groupObjects) throws NotifyRemotingException;
 
 
     /**
@@ -154,7 +148,7 @@ public interface RemotingController {
      * 
      * @param command
      */
-    public void sendToAllConnections(RequestCommand command) throws NotifyRemotingException;
+     void sendToAllConnections(RequestCommand command) throws NotifyRemotingException;
 
 
     /**
@@ -163,7 +157,7 @@ public interface RemotingController {
      * @param group
      * @param command
      */
-    public void sendToGroup(String group, RequestCommand command) throws NotifyRemotingException;
+     void sendToGroup(String group, RequestCommand command) throws NotifyRemotingException;
 
 
     /**
@@ -184,7 +178,7 @@ public interface RemotingController {
      * @param unit
      * @throws NotifyRemotingException
      */
-    public void transferToGroup(String group, IoBuffer head, IoBuffer tail, FileChannel channel, long position,
+     void transferToGroup(String group, IoBuffer head, IoBuffer tail, FileChannel channel, long position,
             long size, Integer opaque, SingleRequestCallBackListener listener, long time, TimeUnit unit)
             throws NotifyRemotingException;
 
@@ -201,7 +195,7 @@ public interface RemotingController {
      * @param position
      * @param size
      */
-    public void transferToGroup(String group, IoBuffer head, IoBuffer tail, FileChannel channel, long position,
+     void transferToGroup(String group, IoBuffer head, IoBuffer tail, FileChannel channel, long position,
             long size) throws NotifyRemotingException;
 
 
@@ -211,7 +205,7 @@ public interface RemotingController {
      * @param group
      * @param command
      */
-    public void sendToGroupAllConnections(String group, RequestCommand command) throws NotifyRemotingException;
+     void sendToGroupAllConnections(String group, RequestCommand command) throws NotifyRemotingException;
 
 
     /**
@@ -225,7 +219,7 @@ public interface RemotingController {
      * @param listener
      *            响应处理器
      */
-    public void sendToGroup(String group, RequestCommand command, SingleRequestCallBackListener listener)
+     void sendToGroup(String group, RequestCommand command, SingleRequestCallBackListener listener)
             throws NotifyRemotingException;
 
 
@@ -239,7 +233,7 @@ public interface RemotingController {
      * @param listener
      *            响应处理器
      */
-    public void sendToGroup(String group, RequestCommand command, SingleRequestCallBackListener listener, long time,
+     void sendToGroup(String group, RequestCommand command, SingleRequestCallBackListener listener, long time,
             TimeUnit timeunut) throws NotifyRemotingException;
 
 
@@ -254,7 +248,7 @@ public interface RemotingController {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public ResponseCommand invokeToGroup(String group, RequestCommand command) throws InterruptedException,
+     ResponseCommand invokeToGroup(String group, RequestCommand command) throws InterruptedException,
             TimeoutException, NotifyRemotingException;
 
 
@@ -273,7 +267,7 @@ public interface RemotingController {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public ResponseCommand invokeToGroup(String group, RequestCommand command, long time, TimeUnit timeUnit)
+     ResponseCommand invokeToGroup(String group, RequestCommand command, long time, TimeUnit timeUnit)
             throws InterruptedException, TimeoutException, NotifyRemotingException;
 
 
@@ -287,7 +281,7 @@ public interface RemotingController {
      * @param listener
      *            响应处理器
      */
-    public void sendToGroupAllConnections(String group, RequestCommand command,
+     void sendToGroupAllConnections(String group, RequestCommand command,
             GroupAllConnectionCallBackListener listener) throws NotifyRemotingException;
 
 
@@ -302,7 +296,7 @@ public interface RemotingController {
      * @throws InterruptedException
      * @throws NotifyRemotingException
      */
-    public Map<Connection, ResponseCommand> invokeToGroupAllConnections(String group, RequestCommand command)
+     Map<Connection, ResponseCommand> invokeToGroupAllConnections(String group, RequestCommand command)
             throws InterruptedException, NotifyRemotingException;
 
 
@@ -317,7 +311,7 @@ public interface RemotingController {
      * @throws InterruptedException
      * @throws NotifyRemotingException
      */
-    public Map<Connection, ResponseCommand> invokeToGroupAllConnections(String group, RequestCommand command,
+     Map<Connection, ResponseCommand> invokeToGroupAllConnections(String group, RequestCommand command,
             long time, TimeUnit timeUnit) throws InterruptedException, NotifyRemotingException;
 
 
@@ -331,7 +325,7 @@ public interface RemotingController {
      * @param listener
      *            响应处理器
      */
-    public void sendToGroupAllConnections(String group, RequestCommand command,
+     void sendToGroupAllConnections(String group, RequestCommand command,
             GroupAllConnectionCallBackListener listener, long time, TimeUnit timeUnit) throws NotifyRemotingException;
 
 
@@ -341,7 +335,7 @@ public interface RemotingController {
      * @param group
      * @return
      */
-    public int getConnectionCount(String group);
+     int getConnectionCount(String group);
 
 
     /**
@@ -349,7 +343,7 @@ public interface RemotingController {
      * 
      * @return
      */
-    public Set<String> getGroupSet();
+     Set<String> getGroupSet();
 
 
     /**
@@ -360,7 +354,7 @@ public interface RemotingController {
      * @param key
      * @param value
      */
-    public void setAttribute(String group, String key, Object value);
+     void setAttribute(String group, String key, Object value);
 
 
     /**
@@ -372,7 +366,7 @@ public interface RemotingController {
      * @param value
      * @return
      */
-    public Object setAttributeIfAbsent(String group, String key, Object value);
+     Object setAttributeIfAbsent(String group, String key, Object value);
 
 
     /**
@@ -383,7 +377,7 @@ public interface RemotingController {
      * @param key
      * @return
      */
-    public Object getAttribute(String group, String key);
+     Object getAttribute(String group, String key);
 
 
     /**
@@ -391,7 +385,7 @@ public interface RemotingController {
      * 
      * @param connectionLifeCycleListener
      */
-    public void addConnectionLifeCycleListener(ConnectionLifeCycleListener connectionLifeCycleListener);
+     void addConnectionLifeCycleListener(ConnectionLifeCycleListener connectionLifeCycleListener);
 
 
     /**
@@ -399,7 +393,7 @@ public interface RemotingController {
      * 
      * @param connectionLifeCycleListener
      */
-    public void removeConnectionLifeCycleListener(ConnectionLifeCycleListener connectionLifeCycleListener);
+     void removeConnectionLifeCycleListener(ConnectionLifeCycleListener connectionLifeCycleListener);
 
 
     /**
@@ -410,7 +404,7 @@ public interface RemotingController {
      * @param key
      * @return
      */
-    public Object removeAttribute(String group, String key);
+     Object removeAttribute(String group, String key);
 
 
     /**
@@ -418,7 +412,7 @@ public interface RemotingController {
      * 
      * @return
      */
-    public RemotingContext getRemotingContext();
+     RemotingContext getRemotingContext();
 
 
     /**
@@ -431,7 +425,7 @@ public interface RemotingController {
      *            发送的命令
      * @return
      */
-    public Connection selectConnectionForGroup(String group, ConnectionSelector connectionSelector,
+     Connection selectConnectionForGroup(String group, ConnectionSelector connectionSelector,
             RequestCommand request) throws NotifyRemotingException;
 
 }

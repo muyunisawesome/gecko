@@ -16,5 +16,5 @@
 package com.taobao.gecko.service.impl;
 
 public interface DefaultRemotingContextMBean {
-    public int getCallBackCountAvailablePermits();
+    int getCallBackCountAvailablePermits();
 }

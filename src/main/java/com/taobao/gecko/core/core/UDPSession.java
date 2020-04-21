@@ -36,7 +36,7 @@ public interface UDPSession extends Session {
      * @param packet
      * @return future
      */
-    public Future<Boolean> asyncWrite(SocketAddress targetAddr, Object packet);
+    Future<Boolean> asyncWrite(SocketAddress targetAddr, Object packet);
 
 
     /**
@@ -45,5 +45,5 @@ public interface UDPSession extends Session {
      * @param targetAddr
      * @param packet
      */
-    public void write(SocketAddress targetAddr, Object packet);
+    void write(SocketAddress targetAddr, Object packet);
 }

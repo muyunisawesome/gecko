@@ -23,8 +23,8 @@ import com.taobao.gecko.core.core.CodecFactory;
 
 
 /**
- * 
- * 
+ *
+ *
  * wire协议类型，任何想要使用gecko的协议都需要继承此类并实现相应方法
  * 
  * @author boyan
@@ -33,6 +33,7 @@ import com.taobao.gecko.core.core.CodecFactory;
  */
 
 public abstract class WireFormatType {
+
     private static Map<String, WireFormatType> registeredWireFormatType = new HashMap<String, WireFormatType>();
 
 

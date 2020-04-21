@@ -40,7 +40,7 @@ public interface SingleRequestCallBackListener {
      * @param conn
      *            Ó¦´ðÁ¬½Ó
      */
-    public void onResponse(ResponseCommand responseCommand, Connection conn);
+    void onResponse(ResponseCommand responseCommand, Connection conn);
 
 
     /**
@@ -48,7 +48,7 @@ public interface SingleRequestCallBackListener {
      * 
      * @param e
      */
-    public void onException(Exception e);
+    void onException(Exception e);
 
 
     /**
@@ -56,5 +56,5 @@ public interface SingleRequestCallBackListener {
      * 
      * @return
      */
-    public ThreadPoolExecutor getExecutor();
+    ThreadPoolExecutor getExecutor();
 }

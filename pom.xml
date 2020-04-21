@@ -108,6 +108,8 @@
 	  <scope>test</scope>
 	</dependency>
   </dependencies>
+
+  <!--代码测试覆盖插件--><!--
   <reporting>
 	<plugins>
 	  <plugin>
@@ -121,7 +123,7 @@
 		</configuration>
 	  </plugin>
 	</plugins>
-  </reporting>
+  </reporting>-->
   <scm>
 	<connection>scm:git:git@github.com:killme2008/gecko.git</connection>
 	<developerConnection>scm:git:git@github.com:killme2008/gecko.git</developerConnection>

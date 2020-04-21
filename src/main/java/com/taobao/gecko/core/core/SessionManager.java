@@ -24,9 +24,9 @@ package com.taobao.gecko.core.core;
  * 
  * @since 1.0, 2009-12-16 обнГ06:01:50
  */
-public interface SessionManager {
-    public void registerSession(Session session);
+ public interface SessionManager {
 
+     void registerSession(Session session);
 
-    public void unregisterSession(Session session);
+     void unregisterSession(Session session);
 }

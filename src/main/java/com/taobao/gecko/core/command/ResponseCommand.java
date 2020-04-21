@@ -28,16 +28,14 @@ import java.net.InetSocketAddress;
  * @since 1.0, 2009-12-16 ÏÂÎç05:55:15
  */
 
-public interface ResponseCommand extends CommandHeader {
-    static final long serialVersionUID = 77788812547386438L;
-
+ public interface ResponseCommand extends CommandHeader {
 
     /**
      * ·µ»ØÏìÓ¦×´Ì¬
      * 
      * @return
      */
-    public ResponseStatus getResponseStatus();
+     ResponseStatus getResponseStatus();
 
 
     /**
@@ -45,7 +43,7 @@ public interface ResponseCommand extends CommandHeader {
      * 
      * @param responseStatus
      */
-    public void setResponseStatus(ResponseStatus responseStatus);
+     void setResponseStatus(ResponseStatus responseStatus);
 
 
     /**
@@ -53,7 +51,7 @@ public interface ResponseCommand extends CommandHeader {
      * 
      * @return
      */
-    public boolean isBoolean();
+     boolean isBoolean();
 
 
     /**
@@ -61,7 +59,7 @@ public interface ResponseCommand extends CommandHeader {
      * 
      * @return
      */
-    public InetSocketAddress getResponseHost();
+     InetSocketAddress getResponseHost();
 
 
     /**
@@ -69,7 +67,7 @@ public interface ResponseCommand extends CommandHeader {
      * 
      * @param address
      */
-    public void setResponseHost(InetSocketAddress address);
+     void setResponseHost(InetSocketAddress address);
 
 
     /**
@@ -77,7 +75,7 @@ public interface ResponseCommand extends CommandHeader {
      * 
      * @return
      */
-    public long getResponseTime();
+     long getResponseTime();
 
 
     /**
@@ -85,7 +83,7 @@ public interface ResponseCommand extends CommandHeader {
      * 
      * @param time
      */
-    public void setResponseTime(long time);
+     void setResponseTime(long time);
 
 
     /**
@@ -93,5 +91,5 @@ public interface ResponseCommand extends CommandHeader {
      * 
      * @param opaque
      */
-    public void setOpaque(Integer opaque);
+     void setOpaque(Integer opaque);
 }

@@ -31,7 +31,7 @@ public interface BooleanAckCommand extends ResponseCommand {
      * 
      * @return
      */
-    public String getErrorMsg();
+    String getErrorMsg();
 
 
     /**
@@ -39,5 +39,5 @@ public interface BooleanAckCommand extends ResponseCommand {
      * 
      * @param errorMsg
      */
-    public void setErrorMsg(String errorMsg);
+    void setErrorMsg(String errorMsg);
 }

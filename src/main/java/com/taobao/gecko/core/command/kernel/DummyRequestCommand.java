@@ -31,8 +31,8 @@ public interface DummyRequestCommand extends RequestCommand {
      * 
      * @return
      */
-    public String getDummy();
+    String getDummy();
 
 
-    public void setDummy(String dummy);
+    void setDummy(String dummy);
 }

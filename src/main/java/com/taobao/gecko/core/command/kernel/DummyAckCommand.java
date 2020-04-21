@@ -26,8 +26,8 @@ import com.taobao.gecko.core.command.ResponseCommand;
  */
 public interface DummyAckCommand extends ResponseCommand {
 
-    public String getDummy();
+    String getDummy();
 
 
-    public void setDummy(String dummy);
+    void setDummy(String dummy);
 }

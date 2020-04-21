@@ -29,5 +29,5 @@ public interface RequestCommand extends CommandHeader {
      * 
      * @return
      */
-    public CommandHeader getRequestHeader();
+    CommandHeader getRequestHeader();
 }

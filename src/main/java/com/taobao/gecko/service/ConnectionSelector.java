@@ -31,6 +31,7 @@ import com.taobao.gecko.service.exception.NotifyRemotingException;
  */
 
 public interface ConnectionSelector {
+
     /**
      * 从分组的连接列表中选择想要的连接
      * 
@@ -42,6 +43,6 @@ public interface ConnectionSelector {
      *            分组的连接列表
      * @return
      */
-    public Connection select(String targetGroup, RequestCommand request, List<Connection> connectionList)
+    Connection select(String targetGroup, RequestCommand request, List<Connection> connectionList)
             throws NotifyRemotingException;
 }

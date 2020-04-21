@@ -41,13 +41,13 @@ public interface WriteMessage {
     Object getMessage();
 
 
-    public boolean hasRemaining();
+    boolean hasRemaining();
 
 
-    public long remaining();
+    long remaining();
 
 
-    public long write(WritableByteChannel channel) throws IOException;
+    long write(WritableByteChannel channel) throws IOException;
 
 
     FutureImpl<Boolean> getWriteFuture();

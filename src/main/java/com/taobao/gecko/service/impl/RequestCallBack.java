@@ -39,7 +39,7 @@ public interface RequestCallBack {
      *            当前时间
      * @return
      */
-    public boolean isInvalid(long now);
+    boolean isInvalid(long now);
 
 
     /**
@@ -52,7 +52,7 @@ public interface RequestCallBack {
      * @param connection
      *            应答的连接
      */
-    public void onResponse(String group, ResponseCommand responseCommand, Connection connection);
+    void onResponse(String group, ResponseCommand responseCommand, Connection connection);
 
 
     /**
@@ -62,7 +62,7 @@ public interface RequestCallBack {
      * @param conn
      * @param requestCommand
      */
-    public void setException(Exception e, Connection conn, RequestCommand requestCommand);
+    void setException(Exception e, Connection conn, RequestCommand requestCommand);
 
 
     public void dispose();

@@ -25,5 +25,5 @@ package com.taobao.gecko.core.extension;
  */
 public interface ConnectFailListener {
 
-    public void onConnectFail(Object...args);
+    void onConnectFail(Object...args);
 }

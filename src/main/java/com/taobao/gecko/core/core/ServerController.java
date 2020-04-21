@@ -28,14 +28,14 @@ import java.net.InetSocketAddress;
  * 
  * @since 1.0, 2009-12-16 обнГ06:00:59
  */
-public interface ServerController extends Controller {
+ public interface ServerController extends Controller {
 
-    public void bind(InetSocketAddress localAddress) throws IOException;
-
-
-    public void bind(int port) throws IOException;
+     void bind(InetSocketAddress localAddress) throws IOException;
 
 
-    public void unbind() throws IOException;
+     void bind(int port) throws IOException;
+
+
+     void unbind() throws IOException;
 
 }
