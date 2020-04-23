@@ -163,51 +163,24 @@ public class DefaultRemotingContext implements RemotingContext, DefaultRemotingC
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#addConnectionToGroup
-     * (java.lang.String, com.taobao.gecko.service.Connection)
-     */
     @Override
     public boolean addConnectionToGroup(final String group, final Connection connection) {
         return this.groupManager.addConnection(group, connection);
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#addConnection
-     * (com.taobao.gecko.service.Connection)
-     */
     @Override
     public void addConnection(final Connection connection) {
         this.groupManager.addConnection(Constants.DEFAULT_GROUP, connection);
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#removeConnection
-     * (com.taobao.gecko.service.Connection)
-     */
     @Override
     public void removeConnection(final Connection connection) {
         this.groupManager.removeConnection(Constants.DEFAULT_GROUP, connection);
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seecom.taobao.notify.remoting.service.impl.RemotingContext#
-     * getConnectionSetByGroup(java.lang.String)
-     */
     @Override
     public List<Connection> getConnectionsByGroup(final String group) {
         return this.groupManager.getConnectionsByGroup(group);
@@ -219,26 +192,12 @@ public class DefaultRemotingContext implements RemotingContext, DefaultRemotingC
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seecom.taobao.notify.remoting.service.impl.RemotingContext#
-     * removeConnectionFromGroup(java.lang.String,
-     * com.taobao.gecko.service.Connection)
-     */
     @Override
     public boolean removeConnectionFromGroup(final String group, final Connection connection) {
         return this.groupManager.removeConnection(group, connection);
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#getAttribute(
-     * java.lang.Object, java.lang.Object)
-     */
     @Override
     public Object getAttribute(final Object key, final Object defaultValue) {
         final Object value = this.attributes.get(key);
@@ -246,93 +205,43 @@ public class DefaultRemotingContext implements RemotingContext, DefaultRemotingC
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#getAttribute(
-     * java.lang.Object)
-     */
     @Override
     public Object getAttribute(final Object key) {
         return this.attributes.get(key);
     }
 
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#getAttributeKeys
-     * ()
-     */
     @Override
     public Set<Object> getAttributeKeys() {
         return this.attributes.keySet();
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#setAttribute(
-     * java.lang.Object, java.lang.Object)
-     */
     @Override
     public Object setAttribute(final Object key, final Object value) {
         return this.attributes.put(key, value);
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#setAttribute(
-     * java.lang.Object)
-     */
     public Object setAttribute(final Object key) {
         return this.attributes.put(key, null);
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.taobao.gecko.service.impl.RemotingContext#dispose()
-     */
     public void dispose() {
         this.groupManager.clear();
         this.attributes.clear();
     }
 
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#setAttributeIfAbsent
-     * (java.lang.Object, java.lang.Object)
-     */
     @Override
     public Object setAttributeIfAbsent(final Object key, final Object value) {
         return this.attributes.putIfAbsent(key, value);
     }
-
 
     public Object removeAttribute(final Object key) {
         return this.attributes.remove(key);
     }
 
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.taobao.gecko.service.impl.RemotingContext#setAttributeIfAbsent
-     * (java.lang.Object)
-     */
     @Override
     public Object setAttributeIfAbsent(final Object key) {
         return this.attributes.putIfAbsent(key, null);

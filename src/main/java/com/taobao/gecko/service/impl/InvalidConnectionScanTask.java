@@ -23,7 +23,8 @@ import com.taobao.gecko.service.Connection;
 
 /**
  * 扫描无效的连接任务，仅用于服务器
- * 
+ *
+ * （线程和任务分开写， 任务还提供了一个公共接口）
  * @author boyan
  * @Date 2010-5-26
  * 

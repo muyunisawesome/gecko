@@ -30,16 +30,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public final class ReconnectTask {
-    private Throwable lastException;
-    private final InetSocketAddress remoteAddress;
-    private volatile boolean done;
-    private final Set<String> groupSet;
-    private final AtomicInteger counter = new AtomicInteger();
-
-
-    public long increaseRetryCounterAndGet() {
-        return this.counter.incrementAndGet();
-    }
+    private Throwable lastException; //上次执行的异常
+    private final InetSocketAddress remoteAddress;  //要连接的远程地址
+    private volatile boolean done; //是否已执行过
+    private final Set<String> groupSet; //本地任务的 所有需要重连的任务
+    private final AtomicInteger counter = new AtomicInteger(); //执行次数
 
 
     public ReconnectTask(Set<String> groupSet, InetSocketAddress remoteAddress) {
@@ -48,6 +43,10 @@ public final class ReconnectTask {
         this.remoteAddress = remoteAddress;
     }
 
+    //执行次数+1
+    public long increaseRetryCounterAndGet() {
+        return this.counter.incrementAndGet();
+    }
 
     public Set<String> getGroupSet() {
         return this.groupSet;

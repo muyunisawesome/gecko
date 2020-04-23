@@ -26,5 +26,5 @@ import java.net.DatagramPacket;
  * 
  */
 public interface UDPServiceHandler {
-    public void onMessageReceived(DatagramPacket datagramPacket);
+    void onMessageReceived(DatagramPacket datagramPacket);
 }

@@ -60,8 +60,8 @@ public class ScanAllConnectionRunner implements Runnable {
 
 
     public void run() {
-        // 获取所有连接并遍历
         final long now = System.currentTimeMillis();
+        // 获取所有默认group下的连接并遍历 
         final List<Connection> connections =
                 this.controller.remotingContext.getConnectionsByGroup(Constants.DEFAULT_GROUP);
         if (connections != null) {

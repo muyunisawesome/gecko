@@ -58,5 +58,5 @@ public interface RequestCallBack {
     void setException(Exception e, Connection conn, RequestCommand requestCommand);
 
 
-    public void dispose();
+    void dispose();
 }

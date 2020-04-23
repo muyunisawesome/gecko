@@ -35,6 +35,6 @@ public interface UDPClient extends UDPController {
      * 
      * @param buffer
      */
-    public void send(InetSocketAddress inetSocketAddress, ByteBuffer buffer) throws NotifyRemotingException;
+    void send(InetSocketAddress inetSocketAddress, ByteBuffer buffer) throws NotifyRemotingException;
 
 }

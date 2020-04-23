@@ -25,13 +25,13 @@ import com.taobao.gecko.service.exception.NotifyRemotingException;
  * @Date 2010-8-26
  * 
  */
-public interface UDPController {
+ public interface UDPController {
     /**
      * Æô¶¯·þÎñ
      * 
      * @throws NotifyRemotingException
      */
-    public void start() throws NotifyRemotingException;
+     void start() throws NotifyRemotingException;
 
 
     /**
@@ -39,7 +39,7 @@ public interface UDPController {
      * 
      * @throws NotifyRemotingException
      */
-    public void stop() throws NotifyRemotingException;
+     void stop() throws NotifyRemotingException;
 
 
     /**
@@ -47,8 +47,8 @@ public interface UDPController {
      * 
      * @return
      */
-    public UDPServiceHandler getUDPServiceHandler();
+     UDPServiceHandler getUDPServiceHandler();
 
 
-    public boolean isStarted();
+     boolean isStarted();
 }

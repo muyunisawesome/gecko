@@ -54,7 +54,7 @@ public class DefaultRemotingServer extends BaseRemotingController implements Rem
 
     }
 
-
+    @Override
     public void setServerConfig(final ServerConfig serverConfig) {
         if (this.controller != null && this.controller.isStarted()) {
             throw new IllegalStateException("RemotingServer已经启动，设置无效");
@@ -82,8 +82,8 @@ public class DefaultRemotingServer extends BaseRemotingController implements Rem
 
             final ServerConfig serverConfig = (ServerConfig) this.config;
             ((TCPController) this.controller).setBacklog(serverConfig.getBacklog());
-            // 优先绑定指定IP地址
-            if (serverConfig.getLocalInetSocketAddress() != null) {
+            //核心controller绑定并启动
+            if (serverConfig.getLocalInetSocketAddress() != null) {   // 优先绑定指定IP地址
                 this.controller.bind(serverConfig.getLocalInetSocketAddress());
             }
             else {
@@ -107,7 +107,7 @@ public class DefaultRemotingServer extends BaseRemotingController implements Rem
         }
     }
 
-
+    @Override
     public synchronized URI getConnectURI() {
         final InetSocketAddress socketAddress = this.getInetSocketAddress();
         if (socketAddress == null) {
@@ -138,7 +138,7 @@ public class DefaultRemotingServer extends BaseRemotingController implements Rem
         }
     }
 
-
+    @Override
     public InetSocketAddress getInetSocketAddress() {
         return this.controller == null ? null : this.controller.getLocalSocketAddress();
     }
