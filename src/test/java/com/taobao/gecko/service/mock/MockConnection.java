@@ -45,7 +45,7 @@ import com.taobao.gecko.service.impl.RequestCallBack;
 
 public class MockConnection implements Connection {
 
-    public ByteOrder readBufferOrder() {
+    public ByteOrder getReadBufferOrder() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -63,7 +63,7 @@ public class MockConnection implements Connection {
     }
 
 
-    public void readBufferOrder(final ByteOrder byteOrder) {
+    public void setReadBufferOrder(final ByteOrder byteOrder) {
         // TODO Auto-generated method stub
 
     }
