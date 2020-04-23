@@ -142,9 +142,9 @@ public interface Session {
 
 
     /**
-     * Check if session is idle
-     * 
-     * @return
+     * session 是否空闲
+     *
+     * true:当前时间-上一次处理时间>阈值
      */
     boolean isIdle();
 

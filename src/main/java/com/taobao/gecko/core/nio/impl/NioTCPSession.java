@@ -80,11 +80,13 @@ public class NioTCPSession extends AbstractNioSession {
     public NioTCPSession(final NioSessionConfig sessionConfig, final int readRecvBufferSize) {
         super(sessionConfig);
         if (this.selectableChannel != null && this.getRemoteSocketAddress() != null) {
+            //判断连接的ip地址是否是回送地址
             this.loopback = this.getRemoteSocketAddress().getAddress().isLoopbackAddress();
         }
-        this.setReadBuffer(IoBuffer.allocate(readRecvBufferSize));
-        this.initialReadBufferSize = this.readBuffer.capacity();
-        this.onCreated();
+        //设置读缓冲区（用来做会话读写）
+        this.setReadBuffer(IoBuffer.allocate(readRecvBufferSize));//设置根据配置分配的缓冲区
+        this.initialReadBufferSize = this.readBuffer.capacity(); //获取实际的缓冲区大小
+        this.onCreated();//触发session创建的操作， 内部建立连接，加入连接分组等
         try {
             this.recvBufferSize = ((SocketChannel) this.selectableChannel).socket().getReceiveBufferSize();
         }
@@ -143,7 +145,9 @@ public class NioTCPSession extends AbstractNioSession {
 
     }
 
-
+    /**
+     * 获取地址，如果为空用内部的channel获取
+     */
     public InetSocketAddress getRemoteSocketAddress() {
         if (this.remoteAddress == null) {
             if (this.selectableChannel instanceof SocketChannel) {
@@ -228,26 +232,32 @@ public class NioTCPSession extends AbstractNioSession {
 
     @Override
     protected void readFromBuffer() {
+        //缓冲区在session构建的时候分配了大小，但是如果缓冲区是空的，则根据配置重构缓冲区大小
         if (!this.readBuffer.hasRemaining()) {
+            //MINA的ioBuffer根据写入的数据大小自动变化大小。也就是获取边长数据
             this.readBuffer =
                     IoBuffer.wrap(ByteBufferUtils.increaseBufferCapatity(this.readBuffer.buf(), this.recvBufferSize));
         }
         int n = -1;
-        int readCount = 0;
+        int readCount = 0; //读取到的字节数
         try {
+            //循环往ioBuffer里写，
+            //read()方法返回的int值表示读了多少字节进Buffer里。如果返回的是-1，表示已经读到了流的末尾
             while ((n = ((ReadableByteChannel) this.selectableChannel).read(this.readBuffer.buf())) > 0) {
-                readCount += n;
-                // readBuffer没有空间，跳出循环
+                readCount += n;//读取字节数+实际读到字节数
+                // readBuffer没有空间（读满了），跳出循环
                 if (!this.readBuffer.hasRemaining()) {
                     break;
                 }
             }
+            //读完
             if (readCount > 0) {
-                this.readBuffer.flip();
-                this.decode();
+                this.readBuffer.flip();//ioBuffer从写模式变成读模式
+                this.decode(); //***********解码读到的数据***********/
                 this.readBuffer.compact();
             }
-            else if (readCount == 0 && this.useBlockingRead) {
+            else if (readCount == 0 && this.useBlockingRead) {//如果buffer方式没读到，并且是阻塞方式读
+                //如果是通信channel(即SocketChannel)，并且socket没有关闭
                 if (this.selectableChannel instanceof SocketChannel
                         && !((SocketChannel) this.selectableChannel).socket().isInputShutdown()) {
                     n = this.blockingRead();
@@ -255,6 +265,7 @@ public class NioTCPSession extends AbstractNioSession {
                 if (n > 0) {
                     readCount += n;
                 }
+                //这种阻塞方式读并没有做响应， 我看目的就是为了检查连接是否关闭
             }
             if (n < 0) { // Connection closed
                 this.close0();
@@ -323,16 +334,16 @@ public class NioTCPSession extends AbstractNioSession {
     public void decode() {
         Object message;
         int size = this.readBuffer.remaining();
-        while (this.readBuffer.hasRemaining()) {
+        while (this.readBuffer.hasRemaining()) { //这里有while代替if，其实用if一样
             try {
                 message = this.decoder.decode(this.readBuffer, this);
                 if (message == null) {
                     break;
                 }
                 else {
-                    if (this.statistics.isStatistics()) {
-                        this.statistics.statisticsRead(size - this.readBuffer.remaining());
-                        size = this.readBuffer.remaining();
+                    if (this.statistics.isStatistics()) { //如果启动统计功能
+                        this.statistics.statisticsRead(size - this.readBuffer.remaining());//统计每次读了多少
+                        size = this.readBuffer.remaining();//设置下一次余下的大小
                     }
                 }
                 this.dispatchReceivedMessage(message);

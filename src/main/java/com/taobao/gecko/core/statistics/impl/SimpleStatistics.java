@@ -108,21 +108,30 @@ public class SimpleStatistics implements Statistics {
         this.start();
     }
 
+    //每次统计的开始时间，停止时间
     private long startTime, stopTime = -1;
 
+    /**************几个维度************/
+    //接收消息数量
     private final AtomicLong recvMessageCount = new AtomicLong();
 
+    //接收消息总大小
     private final AtomicLong recvMessageTotalSize = new AtomicLong();
 
+    //写消息数量
     private final AtomicLong writeMessageCount = new AtomicLong();
 
+    //写消息总大小
     private final AtomicLong writeMessageTotalSize = new AtomicLong();
 
+    //处理消息数量
     private final AtomicLong processMessageCount = new AtomicLong();
 
-    private final AtomicLong acceptCount = new AtomicLong();
-
+    //处理消息总耗时
     private final AtomicLong processMessageTotalTime = new AtomicLong();
+
+    //接收的accept数量
+    private final AtomicLong acceptCount = new AtomicLong();
 
 
     public long getStartedTime() {

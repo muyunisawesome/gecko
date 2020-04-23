@@ -33,6 +33,7 @@ public class TimerRefQueue {
 
 
     public TimerRefQueue() {
+        //设置头的前一个下一个都是自己
         this.head.prev = this.head.next = this.head;
     }
 
@@ -52,6 +53,7 @@ public class TimerRefQueue {
             else {
                 timerRef.queue = this;
             }
+            //在头和之前的元素之间插入一个元素
             timerRef.prev = this.head.prev;
             timerRef.next = this.head;
             this.head.prev.next = timerRef;
@@ -79,9 +81,10 @@ public class TimerRefQueue {
             if (timerRef.queue != this) {
                 throw new IllegalArgumentException("该定时器不在本队列中" + timerRef.queue);
             }
+            //首尾相连
             timerRef.prev.next = timerRef.next;
             timerRef.next.prev = timerRef.prev;
-
+            //当前元素去头去尾
             timerRef.next = timerRef.prev = null;
             timerRef.queue = null;
             this.size--;
@@ -149,6 +152,9 @@ public class TimerRefQueue {
 
 
     public void iterateQueue(TimerQueueVisitor visitor) {
+        //遍历定时器队列
+        //先把定时器队列遍历出来，因为该队列是线程安全的，如果在遍历的同时访问，影响性能
+        //1.取出
         TimerRef[] snapshot = null;
         this.lock.lock();
         try {
@@ -165,6 +171,7 @@ public class TimerRefQueue {
         finally {
             this.lock.unlock();
         }
+        //2.遍历
         if (snapshot != null) {
             for (TimerRef timerRef : snapshot) {
                 if (timerRef != null) {

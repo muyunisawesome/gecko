@@ -42,6 +42,7 @@ import com.taobao.gecko.core.nio.NioSessionConfig;
  */
 public abstract class SocketChannelController extends NioController {
 
+    //SO_LINGER选项的作用是等待发送缓冲区中的数据发送完成
     protected boolean soLingerOn = false;
 
 

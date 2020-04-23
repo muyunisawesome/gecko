@@ -55,6 +55,7 @@ public class TCPController extends SocketChannelController implements ServerCont
     private ServerSocketChannel serverSocketChannel;
 
     /**
+     * 积压队列
      * Accept backlog queue size
      */
     private int backlog = 500; // default 500
@@ -108,49 +109,58 @@ public class TCPController extends SocketChannelController implements ServerCont
 
     @Override
     protected void doStart() throws IOException {
+        //打开severSocketChannel
         this.serverSocketChannel = ServerSocketChannel.open();
+        //设置socket超时时间
         this.serverSocketChannel.socket().setSoTimeout(this.soTimeout);
+        //设置socket执行性能的一些参数，连接时间，延迟，带宽
         if (this.connectionTime != 0 || this.latency != 0 || this.bandwidth != 0) {
             this.serverSocketChannel.socket().setPerformancePreferences(this.connectionTime, this.latency,
                 this.bandwidth);
         }
+        //设置severSocketChannel无阻塞
         this.serverSocketChannel.configureBlocking(false);
 
+        //SO_REUSEADDR是让端口释放后立即就可以被再次使用。
         if (this.socketOptions.get(StandardSocketOption.SO_REUSEADDR) != null) {
             this.serverSocketChannel.socket().setReuseAddress(
                 StandardSocketOption.SO_REUSEADDR.type()
                     .cast(this.socketOptions.get(StandardSocketOption.SO_REUSEADDR)));
         }
+        //SO_RCVBUF 设置socket接收缓冲器大小
         if (this.socketOptions.get(StandardSocketOption.SO_RCVBUF) != null) {
             this.serverSocketChannel.socket().setReceiveBufferSize(
                 StandardSocketOption.SO_RCVBUF.type().cast(this.socketOptions.get(StandardSocketOption.SO_RCVBUF)));
 
         }
-        if (this.localSocketAddress != null) {
+        //socket绑定ip并设置积压大小
+        if (this.localSocketAddress != null) {//如果设置了ip就用绑定该ip
             this.serverSocketChannel.socket().bind(this.localSocketAddress, this.backlog);
         }
-        else {
+        else { //如果没有设置ip，那就用本地ip端口号0绑定
             this.serverSocketChannel.socket().bind(new InetSocketAddress("localhost", 0), this.backlog);
         }
+        //设置保存最终成功绑定的ip
         this.setLocalSocketAddress((InetSocketAddress) this.serverSocketChannel.socket().getLocalSocketAddress());
+        //注册serverChannel到reactor[0]上，监听accept
         this.selectorManager.registerChannel(this.serverSocketChannel, SelectionKey.OP_ACCEPT, null);
     }
 
 
     @Override
     public void onAccept(final SelectionKey selectionKey) throws IOException {
-        // Server已经关闭，直接返回
+        // 再次确认server是否关闭，Server已经关闭，直接返回
         if (!this.serverSocketChannel.isOpen()) {
             selectionKey.cancel();
             return;
         }
         SocketChannel sc = null;
         try {
-            sc = this.serverSocketChannel.accept();
+            sc = this.serverSocketChannel.accept();//获取收到的通信socketChannel
             if (sc != null) {
-                this.configureSocketChannel(sc);
-                final Session session = this.buildSession(sc);
-                // enable read
+                this.configureSocketChannel(sc);//配置socketChannel
+                final Session session = this.buildSession(sc);//创建session
+                // enable read 启动读
                 this.selectorManager.registerSession(session, EventType.ENABLE_READ);
                 session.start();
                 super.onAccept(selectionKey); // for statistics

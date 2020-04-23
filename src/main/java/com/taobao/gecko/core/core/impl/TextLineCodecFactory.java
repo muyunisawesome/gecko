@@ -58,13 +58,14 @@ public class TextLineCodecFactory implements CodecFactory {
     class StringDecoder implements CodecFactory.Decoder {
         public Object decode(final IoBuffer buffer, final Session session) {
             String result = null;
-            final int index = SPLIT_PATTERN.matchFirst(buffer);
+            final int index = SPLIT_PATTERN.matchFirst(buffer); //匹配buffer中的第一个换行符吧
             if (index >= 0) {
-                final int limit = buffer.limit();
-                buffer.limit(index);
+                final int limit = buffer.limit(); //暂存之前的limit,估计预留buffer可能有他用
+                buffer.limit(index); //设置limit为第一个换行符位置
+                //用字符集转变成charBuffer
                 final CharBuffer charBuffer = TextLineCodecFactory.this.charset.decode(buffer.buf());
-                result = charBuffer.toString();
-                buffer.limit(limit);
+                result = charBuffer.toString();//转变成String
+                buffer.limit(limit);//还原之前的limit
                 buffer.position(index + SPLIT.remaining());
 
             }

@@ -102,9 +102,9 @@ public final class Reactor extends Thread {
     public static final int JVMBUG_THRESHHOLD2 = JVMBUG_THRESHHOLD * 2;
     public static final int JVMBUG_THRESHHOLD1 = (JVMBUG_THRESHHOLD2 + JVMBUG_THRESHHOLD) / 2;
 
-    public static final int MAX_TIMER_COUNT = 500000;
-
-    public static final int MAX_TIME_OUT_EVENT_PER_TIME = 2000;
+//    public static final int MAX_TIMER_COUNT = 500000;
+//
+//    public static final int MAX_TIME_OUT_EVENT_PER_TIME = 2000;
 
     private static final Log log = LogFactory.getLog(Reactor.class);
 
@@ -131,7 +131,7 @@ public final class Reactor extends Thread {
     private final AtomicBoolean wakenUp = new AtomicBoolean(false);
 
     /**
-     * 注册的事件列表
+     * 注册的事件列表， LinkedTransferQueue数据的存储时间越久越靠前
      */
     private final Queue<Object[]> register = new LinkedTransferQueue<Object[]>();
 
@@ -147,10 +147,14 @@ public final class Reactor extends Thread {
 
     /**
      * 超时时间的二叉堆
+     *
+     * 优先队列形式 实现的 Timer堆
+     *
+     * 内部自动根据元素compare方法自动排序，peek拿第一个不删除poll拿第一个删除，非线程安全
      */
     private final PriorityQueue<TimerRef> timerHeap = new PriorityQueue<TimerRef>();
     /**
-     * 时间缓存
+     * 执行select的时间缓存
      */
     private volatile long timeCache;
 
@@ -158,7 +162,7 @@ public final class Reactor extends Thread {
 
     private volatile int selectTries = 0;
 
-    private long nextTimeout = 0;
+    private long nextTimeout = 0;//下一次session的超时，没此select后更新
 
     private long lastMoveTimestamp = 0; // 上次从timerQueue搬迁到timerHeap的时间戳
 
@@ -171,6 +175,7 @@ public final class Reactor extends Thread {
         this.controller = selectorManager.getController();
         this.selector = SystemUtils.openSelector();
         this.configuration = configuration;
+        //这是reactor线程的名称
         this.setName("notify-remoting-reactor-" + index);
     }
 
@@ -178,7 +183,6 @@ public final class Reactor extends Thread {
     final Selector getSelector() {
         return this.selector;
     }
-
 
     public int getReactorIndex() {
         return this.reactorIndex;
@@ -192,13 +196,13 @@ public final class Reactor extends Thread {
      */
     private long timeoutNext() {
         long selectionTimeout = TIMEOUT_THRESOLD;
-        TimerRef timerRef = this.timerHeap.peek();
-        while (timerRef != null && timerRef.isCanceled()) {
+        TimerRef timerRef = this.timerHeap.peek();//遍历优先队列
+        while (timerRef != null && timerRef.isCanceled()) { //寻找Timer队列里未取消的
             this.timerHeap.poll();
             timerRef = this.timerHeap.peek();
         }
         if (timerRef != null) {
-            final long now = this.getTime();
+            final long now = this.getTime();//获取时间缓存
             // 已经有事件超时，返回-1，不进行select，及时处理超时
             if (timerRef.getTimeoutTimestamp() < now) {
                 selectionTimeout = -1L;
@@ -216,17 +220,24 @@ public final class Reactor extends Thread {
      */
     @Override
     public void run() {
+        //向reactor管理器通知此reactor准备好
         this.selectorManager.notifyReady();
+        //如果管理器启动并且selector是打开状态
         while (this.selectorManager.isStarted() && this.selector.isOpen()) {
             try {
-                this.cancelledKeys = 0;
+                this.cancelledKeys = 0;//cancel的key数，清0
+                //select前需要做的处理
                 this.beforeSelect();
 
                 long before = -1;
-                if (this.isNeedLookingJVMBug()) {
+                if (this.isNeedLookingJVMBug()) { //如果是linux平台并且jdk<1.6.4需要处理bug
                     before = System.currentTimeMillis();
                 }
+                // 获取最需要处理的Timer(定时任务)的等待时间
                 long wait = this.timeoutNext();
+                //若session时间大，说明session还活着，所以等待select后下一轮询处理这次的最大timer
+                //若session时间小，说明session快死了，更紧急，赶紧等待select后更新session状态
+                //也就是谁等待时间小，谁越紧急
                 if (this.nextTimeout > 0 && this.nextTimeout < wait) {
                     wait = this.nextTimeout;
                 }
@@ -234,7 +245,7 @@ public final class Reactor extends Thread {
                 this.timeCache = 0;
                 this.wakenUp.set(false);
                 final int selected = this.select(wait);
-                if (selected == 0) {
+                if (selected == 0) { //返回0说明没有获取到
                     /**
                      * 查看是否发生BUG，参见http://bugs.sun.com/bugdatabase /view_bug
                      * .do?bug_id=6403933
@@ -242,7 +253,7 @@ public final class Reactor extends Thread {
                     if (before != -1) {
                         this.lookJVMBug(before, selected, wait);
                     }
-                    this.selectTries++;
+                    this.selectTries++;//重试次数+1
                     // 检测连接是否过期或者idle，计算下次timeout时间
                     this.nextTimeout = this.checkSessionTimeout();
                 }
@@ -250,9 +261,9 @@ public final class Reactor extends Thread {
                     this.selectTries = 0;
                 }
                 // 缓存时间，那么后续的处理超时和添加timer的获取的时间都是缓存的时间，降低开销
-                this.timeCache = this.getTime();
-                this.processTimeout();
-                this.processSelectedKeys();
+                this.timeCache = this.getTime(); //如果已经缓存就用缓存的时间，如果没有去当前时间
+                this.processTimeout();//处理超时
+                this.processSelectedKeys();//处理触发的key和未触发的key，派发触发的key对于的事件，检查未触发的key的session状态
             }
             catch (final ClosedSelectorException e) {
                 break;
@@ -267,6 +278,9 @@ public final class Reactor extends Thread {
                 }
             }
         }
+        // ---------------走到这里表示关闭-----
+        //如果selectorManager关闭或者selector关闭
+        //则关闭channel，清除selector，关闭selector
         if (this.selector != null) {
             if (this.selector.isOpen()) {
                 try {
@@ -289,15 +303,15 @@ public final class Reactor extends Thread {
             final long now = this.getTime();
             TimerRef timerRef = null;
             while ((timerRef = this.timerHeap.peek()) != null) {
-                if (timerRef.isCanceled()) {
+                if (timerRef.isCanceled()) {//如果被取消了，那就删掉这个元素，继续遍历
                     this.timerHeap.poll();
                     continue;
                 }
-                // 没有超时，break掉
+                // 没有超时，break掉。因为是基于priorityQueue，第一个肯定是最大的，第一个没超时后面的肯定都没超时
                 if (timerRef.getTimeoutTimestamp() > now) {
                     break;
                 }
-                // 移除并处理
+                // 从优先队列里移除并处理
                 this.controller.onTimeout(this.timerHeap.poll());
             }
         }
@@ -308,12 +322,15 @@ public final class Reactor extends Thread {
         final Set<SelectionKey> selectedKeys = this.selector.selectedKeys();
         this.gate.lock();
         try {
+            //selectedKeys触发的key, this.selector.keys()所有注册的key
             this.postSelect(selectedKeys, this.selector.keys());
+            //通过触发的key派发事件
             this.dispatchEvent(selectedKeys);
         }
         finally {
             this.gate.unlock();
         }
+        //检查取消的key
         this.clearCancelKeys();
         return selectedKeys;
     }
@@ -338,7 +355,7 @@ public final class Reactor extends Thread {
         }
     }
 
-
+    //获取时间缓存
     public long getTime() {
         final long timeCache = this.timeCache;
         if (timeCache > 0) {
@@ -455,47 +472,51 @@ public final class Reactor extends Thread {
     final void dispatchEvent(final Set<SelectionKey> selectedKeySet) {
         final Iterator<SelectionKey> it = selectedKeySet.iterator();
         boolean skipOpRead = false; // 是否跳过读
+        //遍历触发的key
         while (it.hasNext()) {
             final SelectionKey key = it.next();
-            it.remove();
-            if (!key.isValid()) {
-                if (key.attachment() != null) {
-                    this.controller.closeSelectionKey(key);
+            it.remove();//获取后从Set中删除
+            if (!key.isValid()) {//如果不合法
+                if (key.attachment() != null) { //如果有session
+                    this.controller.closeSelectionKey(key); //关掉session
                 }
                 else {
-                    key.cancel();
+                    key.cancel(); //如果没有session，释放key对于的channel
                 }
                 continue;
             }
             try {
+                //如果是accept
                 if (key.isAcceptable()) {
-                    this.controller.onAccept(key);
-                    continue;
+                    this.controller.onAccept(key);//统计accpet数
+                    continue; //继续其他的key
                 }
+                //如果是写
                 if ((key.readyOps() & SelectionKey.OP_WRITE) == SelectionKey.OP_WRITE) {
                     // Remove write interest
                     key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
                     this.controller.onWrite(key);
+                    //如果不支持并发读写，那么已写，跳过读
                     if (!this.controller.isHandleReadWriteConcurrently()) {
                         skipOpRead = true;
                     }
                 }
+                //如果读
                 if (!skipOpRead && (key.readyOps() & SelectionKey.OP_READ) == SelectionKey.OP_READ) {
                     // 移除对read的兴趣
                     key.interestOps(key.interestOps() & ~SelectionKey.OP_READ);
                     // 是否超过流量控制
                     if (!this.controller.getStatistics().isReceiveOverFlow()) {
-                        // Remove read interest
-
-                        this.controller.onRead(key);// 派发读
+                        this.controller.onRead(key);// 没有超过流量限制，派发读
                         continue;
                     }
                     else {
-                        key.interestOps(key.interestOps() // 继续注册读
-                                | SelectionKey.OP_READ);
+                        //超过了流量限制，不派发度，继续读
+                        key.interestOps(key.interestOps() | SelectionKey.OP_READ);
                     }
 
                 }
+                //如果是连接 -----------客户端使用-------
                 if ((key.readyOps() & SelectionKey.OP_CONNECT) == SelectionKey.OP_CONNECT) {
                     this.controller.onConnect(key);
                     continue;
@@ -505,9 +526,9 @@ public final class Reactor extends Thread {
             catch (final RejectedExecutionException e) {
                 // 捕获线程池繁忙的异常，不关闭连接
                 if (key.attachment() instanceof AbstractNioSession) {
-                    ((AbstractSession) key.attachment()).onException(e);
+                    ((AbstractSession) key.attachment()).onException(e);//session exception
                 }
-                this.controller.notifyException(e);
+                this.controller.notifyException(e); //controller通知exception
                 if (this.selector.isOpen()) {
                     continue;
                 }
@@ -535,40 +556,24 @@ public final class Reactor extends Thread {
         }
     }
 
-
-    final void unregisterChannel(final SelectableChannel channel) {
-        try {
-            final Selector selector = this.selector;
-            if (selector != null) {
-                if (channel != null) {
-                    final SelectionKey key = channel.keyFor(selector);
-                    if (key != null) {
-                        key.cancel();
-                        this.cancelledKeys++;
-                    }
-                }
-            }
-            if (channel != null && channel.isOpen()) {
-                channel.close();
-            }
-        }
-        catch (final Throwable t) {
-            // ignore
-        }
-        this.wakeup();
-    }
-
-
+    /**
+     * 检查session是否超时
+     *
+     * 获取selector关联的所有session的最大超时时间（失效，空闲，检查周期中的最大）
+     */
     private final long checkSessionTimeout() {
         long nextTimeout = 0;
+        //如果设置了检查session超时的周期时间
         if (this.configuration.getCheckSessionTimeoutInterval() > 0) {
             this.gate.lock();
             try {
+                //如果重试次数转变的ms>配置的session超时检查周期---> 也就是到了检查期，检查是否超时
                 if (this.selectTries * 1000 >= this.configuration.getCheckSessionTimeoutInterval()) {
                     nextTimeout = this.configuration.getCheckSessionTimeoutInterval();
                     for (final SelectionKey key : this.selector.keys()) {
                         // 检测是否expired或者idle
-                        if (key.attachment() != null) {
+                        if (key.attachment() != null) {//selectionKey附件不为空
+                            //如果失效就是失效的检查时间，如果空闲就是空闲的检测时间
                             final long n = this.checkExpiredIdle(key, this.getSessionFromAttchment(key));
                             nextTimeout = n < nextTimeout ? n : nextTimeout;
                         }
@@ -611,30 +616,38 @@ public final class Reactor extends Thread {
 
     final void beforeSelect() throws IOException {
         this.controller.checkStatisticsForRestart();
+        //处理channel或者session的注册
         this.processRegister();
+        //处理移动定时器
         this.processMoveTimer();
+        //清除cancelkey, 基于阈值
         this.clearCancelKeys();
     }
 
 
     private void processMoveTimer() {
+        //获取缓冲的当前时间
         final long now = this.getTime();
-        // 距离上一次检测时间超过1秒
+        // 达到移动处理的周期（即now-last），并且timer队列不为空，就遍历timer队列
         if (now - this.lastMoveTimestamp >= TIMEOUT_THRESOLD && !this.timerQueue.isEmpty()) {
+            //更新检测时间
             this.lastMoveTimestamp = now;
+            //遍历定时器事件队列
             this.timerQueue.iterateQueue(new TimerQueueVisitor(now));
         }
     }
 
-
+    //处理存储的注册事件
     private final void processRegister() {
         Object[] object = null;
         while ((object = this.register.poll()) != null) {
             switch (object.length) {
             case 2:
+                //派发session事件
                 this.dispatchSessionEvent((Session) object[0], (EventType) object[1], this.selector);
                 break;
             case 3:
+                //注册channel
                 this.registerChannelNow((SelectableChannel) object[0], (Integer) object[1], object[2], this.selector);
                 break;
             }
@@ -661,6 +674,13 @@ public final class Reactor extends Thread {
     }
 
 
+    /**
+     *
+     * 检查未触发的key对应的session是否超时， 好像也没什么用
+     *
+     * @param selectedKeys  触发的key
+     * @param allKeys       所有的key
+     */
     final void postSelect(final Set<SelectionKey> selectedKeys, final Set<SelectionKey> allKeys) {
         if (this.controller.getSessionTimeout() > 0 || this.controller.getSessionIdleTimeout() > 0) {
             for (final SelectionKey key : allKeys) {
@@ -675,17 +695,28 @@ public final class Reactor extends Thread {
     }
 
 
+    /**
+     * 检查session是否失效或者空闲，key没什么用
+     * @param key
+     * @param session
+     * @return
+     */
     private long checkExpiredIdle(final SelectionKey key, final Session session) {
         if (session == null) {
             return 0;
         }
         long nextTimeout = 0;
         boolean expired = false;
+        //失效和空闲， 肯定失效的时间跨度大，所以先检查大的
+        //如果controller设置了session超时
         if (this.controller.getSessionTimeout() > 0) {
+            //key没什么用， 检查session是否失效
             expired = this.checkExpired(key, session);
             nextTimeout = this.controller.getSessionTimeout();
         }
+        //如果controller设置了session空闲超时，并且session没有失效
         if (this.controller.getSessionIdleTimeout() > 0 && !expired) {
+            //检查session是否空闲
             this.checkIdle(session);
             nextTimeout = this.controller.getSessionIdleTimeout();
         }
@@ -703,26 +734,51 @@ public final class Reactor extends Thread {
 
 
     private final boolean checkExpired(final SelectionKey key, final Session session) {
+        //如果现在距离session最后处理时间>超时时间，则失效
         if (session.isExpired()) {
+            //session发送失效事件
             ((NioSession) session).onEvent(EventType.EXPIRED, this.selector);
             return true;
         }
         return false;
     }
 
-
     final void registerChannel(final SelectableChannel channel, final int ops, final Object attachment) {
         final Selector selector = this.selector;
-        if (this.isReactorThread() && selector != null) {
+        if (this.isReactorThread() && selector != null) { //运行中注册其他事件时候，是reactor线程
             this.registerChannelNow(channel, ops, attachment, selector);
         }
-        else {
+        else {//启动时候，注册accept时候，启动线程不是reactor线程
+            //启动成功后，reactor线程执行
             this.register.offer(new Object[] { channel, ops, attachment });
             this.wakeup();
         }
 
     }
 
+    //取消注册channel
+    final void unregisterChannel(final SelectableChannel channel) {
+        try {
+            final Selector selector = this.selector;
+            if (selector != null) {
+                if (channel != null) {
+                    //获取这个channel注册的key，然后取消掉，并记录取消的key数量
+                    final SelectionKey key = channel.keyFor(selector);
+                    if (key != null) {
+                        key.cancel();
+                        this.cancelledKeys++;
+                    }
+                }
+            }
+            if (channel != null && channel.isOpen()) {
+                channel.close();
+            }
+        }
+        catch (final Throwable t) {
+            // ignore
+        }
+        this.wakeup();
+    }
 
     private void registerChannelNow(final SelectableChannel channel, final int ops, final Object attachment,
             final Selector selector) {

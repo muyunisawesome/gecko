@@ -71,10 +71,12 @@ public class GeckoTCPConnectorController extends SocketChannelController {
             socketChannel = SocketChannel.open();
             this.configureSocketChannel(socketChannel);
             final FutureImpl<NioSession> resultFuture = new FutureImpl<NioSession>(args);
-            if (!socketChannel.connect(remoteAddress)) {
+            if (!socketChannel.connect(remoteAddress)) {//执行连接
+                //如果连接失败了，注册一个connect事件给reactor，异步执行连接
                 this.selectorManager.registerChannel(socketChannel, SelectionKey.OP_CONNECT, resultFuture);
             }
             else {
+                //如果第一次连接成功，创建session对象，
                 final NioSession session = this.createSession(socketChannel, args);
                 resultFuture.setResult(session);
             }
@@ -92,13 +94,16 @@ public class GeckoTCPConnectorController extends SocketChannelController {
     @Override
     @SuppressWarnings("unchecked")
     public void onConnect(final SelectionKey key) throws IOException {
+        //如果异步连接成功，remove connect interest
         key.interestOps(key.interestOps() & ~SelectionKey.OP_CONNECT);
         final FutureImpl<NioSession> future = (FutureImpl<NioSession>) key.attachment();
         key.attach(null);
         try {
+            //再次确认该channel是否已结束
             if (!((SocketChannel) key.channel()).finishConnect()) {
                 throw new IOException("Connect Fail");
             }
+            //设置异步结果
             future.setResult(this.createSession((SocketChannel) key.channel(), future.getArgs()));
         }
         catch (final Exception e) {
@@ -126,7 +131,9 @@ public class GeckoTCPConnectorController extends SocketChannelController {
 
 
     protected NioSession createSession(final SocketChannel socketChannel, final Object... args) {
+        //构建session
         final NioSession session = this.buildSession(socketChannel);
+        //注册session，也就是和reactor关联， 并且在controller维护的session集合中添加
         this.selectorManager.registerSession(session, EventType.ENABLE_READ);
         this.setLocalSocketAddress((InetSocketAddress) socketChannel.socket().getLocalSocketAddress());
         session.start();

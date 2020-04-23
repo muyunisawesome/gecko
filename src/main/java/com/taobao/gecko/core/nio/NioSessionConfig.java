@@ -35,6 +35,7 @@ import com.taobao.gecko.core.statistics.Statistics;
  */
 public class NioSessionConfig extends SessionConfig {
 
+    //NIOÌØÐÔ
     public final SelectableChannel selectableChannel;
     public final SelectorManager selectorManager;
 

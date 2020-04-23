@@ -49,16 +49,19 @@ import com.taobao.gecko.core.util.LinkedTransferQueue;
 
 /**
  * Controller抽象基类
- * 
- * 
- * 
+ *
+ * 设置初始化各种默认值，定义启停，以及状态监听器操作
+ * 实现大部分controller行为
+ *
  * @author boyan
  * 
  * @since 1.0, 2009-12-16 下午06:03:07
  */
 public abstract class AbstractController implements Controller, ControllerLifeCycle {
 
+    //统计对象
     protected Statistics statistics = new DefaultStatistics();
+    //统计周期
     protected long statisticsInterval;
 
     protected static final Log log = LogFactory.getLog(AbstractController.class);
@@ -106,6 +109,21 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
     protected Map<SocketOption<?>, Object> socketOptions = new HashMap<SocketOption<?>, Object>();
 
 
+    public AbstractController(final Configuration configuration) {
+        this(configuration, null, null);
+
+    }
+
+    public AbstractController(final Configuration configuration, final CodecFactory codecFactory) {
+        this(configuration, null, codecFactory);
+    }
+
+
+    public AbstractController(final Configuration configuration, final Handler handler, final CodecFactory codecFactory) {
+        this.init(configuration, handler, codecFactory);
+    }
+
+
     public void setSocketOptions(final Map<SocketOption<?>, Object> socketOptions) {
         if (socketOptions == null) {
             throw new NullPointerException("Null socketOptions");
@@ -118,12 +136,12 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
      */
     private final Set<Session> sessionSet = new HashSet<Session>();
 
-
+    @Override
     public final int getDispatchMessageThreadCount() {
         return this.dispatchMessageThreadCount;
     }
 
-
+    @Override
     public final void setDispatchMessageThreadCount(final int dispatchMessageThreadPoolSize) {
         if (this.started) {
             throw new IllegalStateException("Controller is started");
@@ -134,7 +152,7 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         this.dispatchMessageThreadCount = dispatchMessageThreadPoolSize;
     }
 
-
+    @Override
     public long getSessionIdleTimeout() {
         return this.configuration.getSessionIdleTimeout();
     }
@@ -149,64 +167,46 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         return new LinkedTransferQueue<WriteMessage>();
     }
 
-
+    @Override
     public void setSessionIdleTimeout(final long sessionIdleTimeout) {
         this.configuration.setSessionIdleTimeout(sessionIdleTimeout);
 
     }
 
-
+    @Override
     public long getSessionTimeout() {
         return this.sessionTimeout;
     }
 
-
+    @Override
     public void setSessionTimeout(final long sessionTimeout) {
         this.sessionTimeout = sessionTimeout;
     }
 
-
+    @Override
     public int getSoTimeout() {
         return this.soTimeout;
     }
 
-
+    @Override
     public void setSoTimeout(final int timeout) {
         this.soTimeout = timeout;
     }
-
 
     public AbstractController() {
         this(new Configuration(), null, null);
     }
 
-
+    @Override
     public double getReceiveThroughputLimit() {
         return this.statistics.getReceiveThroughputLimit();
     }
 
-
+    @Override
     public void setReceiveThroughputLimit(final double receiveThroughputLimit) {
         this.statistics.setReceiveThroughputLimit(receiveThroughputLimit);
 
     }
-
-
-    public AbstractController(final Configuration configuration) {
-        this(configuration, null, null);
-
-    }
-
-
-    public AbstractController(final Configuration configuration, final CodecFactory codecFactory) {
-        this(configuration, null, codecFactory);
-    }
-
-
-    public AbstractController(final Configuration configuration, final Handler handler, final CodecFactory codecFactory) {
-        this.init(configuration, handler, codecFactory);
-    }
-
 
     private synchronized void init(final Configuration configuration, final Handler handler,
             final CodecFactory codecFactory) {
@@ -254,52 +254,50 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         this.configuration = configuration;
     }
 
-
+    @Override
     public InetSocketAddress getLocalSocketAddress() {
         return this.localSocketAddress;
     }
 
-
+    @Override
     public void setLocalSocketAddress(final InetSocketAddress inetSocketAddress) {
         this.localSocketAddress = inetSocketAddress;
     }
-
 
     public void onAccept(final SelectionKey sk) throws IOException {
         this.statistics.statisticsAccept();
     }
 
-
     public void onConnect(final SelectionKey key) throws IOException {
         throw new UnsupportedOperationException();
     }
 
-
+    @Override
     public void addStateListener(final ControllerStateListener listener) {
         this.stateListeners.add(listener);
     }
 
-
+    @Override
     public void removeStateListener(final ControllerStateListener listener) {
         this.stateListeners.remove(listener);
     }
 
-
+    @Override
     public boolean isHandleReadWriteConcurrently() {
         return this.handleReadWriteConcurrently;
     }
 
-
+    @Override
     public void setHandleReadWriteConcurrently(final boolean handleReadWriteConcurrently) {
         this.handleReadWriteConcurrently = handleReadWriteConcurrently;
     }
 
-
+    @Override
     public int getReadThreadCount() {
         return this.readThreadCount;
     }
 
-
+    @Override
     public void setReadThreadCount(final int readThreadCount) {
         if (this.started) {
             throw new IllegalStateException();
@@ -310,12 +308,12 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         this.readThreadCount = readThreadCount;
     }
 
-
+    @Override
     public final int getWriteThreadCount() {
         return this.writeThreadCount;
     }
 
-
+    @Override
     public final void setWriteThreadCount(final int writeThreadCount) {
         if (this.started) {
             throw new IllegalStateException();
@@ -326,12 +324,12 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         this.writeThreadCount = writeThreadCount;
     }
 
-
+    @Override
     public Handler getHandler() {
         return this.handler;
     }
 
-
+    @Override
     public void setHandler(final Handler handler) {
         if (this.started) {
             throw new IllegalStateException("The Controller have started");
@@ -339,7 +337,7 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         this.handler = handler;
     }
 
-
+    @Override
     public int getPort() {
         if (this.localSocketAddress != null) {
             return this.localSocketAddress.getPort();
@@ -347,7 +345,7 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         throw new NullPointerException("Controller is not binded");
     }
 
-
+    @Override
     public synchronized void start() throws IOException {
         if (this.isStarted()) {
             return;
@@ -429,34 +427,34 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         this.statistics.start();
     }
 
-
+    @Override
     public void notifyStarted() {
         for (final ControllerStateListener stateListener : this.stateListeners) {
             stateListener.onStarted(this);
         }
     }
 
-
+    @Override
     public boolean isStarted() {
         return this.started;
     }
 
-
+    @Override
     public final Statistics getStatistics() {
         return this.statistics;
     }
 
-
+    @Override
     public final CodecFactory getCodecFactory() {
         return this.codecFactory;
     }
 
-
+    @Override
     public final void setCodecFactory(final CodecFactory codecFactory) {
         this.codecFactory = codecFactory;
     }
 
-
+    @Override
     public void notifyReady() {
         for (final ControllerStateListener stateListener : this.stateListeners) {
             stateListener.onReady(this);
@@ -490,7 +488,7 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
 
     }
 
-
+    @Override
     public void stop() throws IOException {
         Set<Session> copySet = null;
         synchronized (this) {
@@ -549,21 +547,21 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         this.stateListeners.clear();
     }
 
-
+    @Override
     public final void notifyException(final Throwable t) {
         for (final ControllerStateListener stateListener : this.stateListeners) {
             stateListener.onException(this, t);
         }
     }
 
-
+    @Override
     public final void notifyStopped() {
         for (final ControllerStateListener stateListener : this.stateListeners) {
             stateListener.onStopped(this);
         }
     }
 
-
+    @Override
     public final void notifyAllSessionClosed() {
         for (final ControllerStateListener stateListener : this.stateListeners) {
             stateListener.onAllSessionClosed(this);
@@ -575,7 +573,7 @@ public abstract class AbstractController implements Controller, ControllerLifeCy
         return Collections.unmodifiableSet(this.sessionSet);
     }
 
-
+    @Override
     public <T> void setSocketOption(final SocketOption<T> socketOption, final T value) {
         if (socketOption == null) {
             throw new NullPointerException("Null socketOption");

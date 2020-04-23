@@ -27,7 +27,7 @@
 package com.taobao.gecko.core.config;
 
 /**
- * Yanf4j 配置对象
+ * 全局配置对象
  * 
  * @author dennis
  * 
@@ -40,7 +40,7 @@ public class Configuration {
 
     private int writeThreadCount = 0;
 
-    private boolean statisticsServer = false;
+    private boolean statisticsServer = false; //是否统计，默认不统计
 
     private boolean handleReadWriteConcurrently = true;
 

@@ -30,14 +30,14 @@ import com.taobao.gecko.core.statistics.Statistics;
  * @since 1.0, 2009-12-16 下午06:01:37
  */
 public class SessionConfig {
-    public final Handler handler;
-    public final CodecFactory codecFactory;
-    public final Statistics statistics;
-    public final Queue<WriteMessage> queue;
-    public final Dispatcher dispatchMessageDispatcher;
-    public final boolean handleReadWriteConcurrently;
-    public final long sessionTimeout;
-    public final long sessionIdelTimeout;
+    public final Handler handler;//处理器
+    public final CodecFactory codecFactory; //编码工厂
+    public final Statistics statistics;//统计器
+    public final Queue<WriteMessage> queue;//写消息队列
+    public final Dispatcher dispatchMessageDispatcher;//消息派发器
+    public final boolean handleReadWriteConcurrently;//是否读写并发
+    public final long sessionTimeout;//session失效超时
+    public final long sessionIdleTimeout;//session空闲超时
 
 
     public SessionConfig(final Handler handler, final CodecFactory codecFactory, final Statistics statistics,
@@ -51,6 +51,6 @@ public class SessionConfig {
         this.dispatchMessageDispatcher = dispatchMessageDispatcher;
         this.handleReadWriteConcurrently = handleReadWriteConcurrently;
         this.sessionTimeout = sessionTimeout;
-        this.sessionIdelTimeout = sessionIdelTimeout;
+        this.sessionIdleTimeout = sessionIdelTimeout;
     }
 }

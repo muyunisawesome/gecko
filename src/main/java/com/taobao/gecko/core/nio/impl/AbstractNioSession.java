@@ -67,13 +67,15 @@ public abstract class AbstractNioSession extends AbstractSession implements NioS
     /**
      * 注册OP_READ
      */
+    @Override
     public final void enableRead(final Selector selector) {
         final SelectionKey key = this.selectableChannel.keyFor(selector);
         if (key != null && key.isValid()) {
-            this.interestRead(key);
+            this.interestRead(key); //添加这个key的感兴趣事件包括read
         }
-        else {
+        else {//第一个
             try {
+                //socketChannel注册读事件
                 this.selectableChannel.register(selector, SelectionKey.OP_READ, this);
             }
             catch (final ClosedChannelException e) {
@@ -106,7 +108,7 @@ public abstract class AbstractNioSession extends AbstractSession implements NioS
         this.registerSession();
     }
 
-
+    @Override
     public InetAddress getLocalAddress() {
         return ((SocketChannel) this.selectableChannel).socket().getLocalAddress();
     }
@@ -115,6 +117,7 @@ public abstract class AbstractNioSession extends AbstractSession implements NioS
     /**
      * 往连接写入消息，可被中断，中断可能引起连接断开，请慎重使用
      */
+    @Override
     public void writeInterruptibly(final Object packet) {
         if (packet == null) {
             throw new NullPointerException("Null packet");
@@ -131,6 +134,7 @@ public abstract class AbstractNioSession extends AbstractSession implements NioS
     /**
      * 往连接异步写入消息，可被中断，中断可能引起连接断开，请慎重使用
      */
+    @Override
     public Future<Boolean> asyncWriteInterruptibly(final Object packet) {
         if (packet == null) {
             throw new NullPointerException("Null packet");
@@ -277,6 +281,7 @@ public abstract class AbstractNioSession extends AbstractSession implements NioS
     /**
      * 注册OP_WRITE
      */
+    @Override
     public final void enableWrite(final Selector selector) {
         final SelectionKey key = this.selectableChannel.keyFor(selector);
         if (key != null && key.isValid()) {

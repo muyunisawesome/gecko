@@ -22,14 +22,14 @@ package com.taobao.gecko.core.nio.impl;
  * 
  */
 public class TimerRef implements Comparable<TimerRef> {
-    long timeoutTimestamp;
+    long timeoutTimestamp; //定时任务超时的时间戳
     final long timeout;
-    volatile Runnable runnable;
-    volatile boolean canceled;
-    volatile TimerRefQueue queue;
-    TimerRef next;
-    TimerRef prev;
-    volatile long addTimestamp;
+    volatile Runnable runnable; //要执行的任务
+    volatile boolean canceled; // 任务是否被取消
+    volatile TimerRefQueue queue;//该定时任务被放入的 列表
+    TimerRef next; //前一个指针
+    TimerRef prev;//下一个指针
+    volatile long addTimestamp; //定时任务创建的时间
 
 
     public TimerRef(Runnable runnable, TimerRefQueue queue, TimerRef next, TimerRef prev) {

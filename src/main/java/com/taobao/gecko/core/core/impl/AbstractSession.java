@@ -53,33 +53,58 @@ import com.taobao.gecko.service.exception.NotifyRemotingException;
  */
 public abstract class AbstractSession implements Session {
 
-    protected IoBuffer readBuffer;
     protected static final Log log = LogFactory.getLog(AbstractSession.class);
 
+    //属性，已知里面要保存session关联的reactor
     protected final ConcurrentHashMap<String, Object> attributes = new ConcurrentHashMap<String, Object>();
 
-    protected Queue<WriteMessage> writeQueue;
 
     protected volatile long sessionIdleTimeout;
 
     protected volatile long sessionTimeout;
 
+    public AtomicLong lastOperationTimeStamp = new AtomicLong(0);
 
+    protected AtomicLong scheduleWritenBytes = new AtomicLong(0);
+
+    protected final Dispatcher dispatchMessageDispatcher;
+    protected volatile boolean useBlockingWrite = false;
+    protected volatile boolean useBlockingRead = true;
+    protected volatile boolean handleReadWriteConcurrently = true;
+
+    protected IoBuffer readBuffer;
+    protected Queue<WriteMessage> writeQueue;
+    protected ReentrantLock writeLock = new ReentrantLock();
+
+    protected AtomicReference<WriteMessage> currentMessage = new AtomicReference<WriteMessage>();
+
+    protected CodecFactory.Encoder encoder;
+    protected CodecFactory.Decoder decoder;
+
+    protected Handler handler;
+
+    protected volatile boolean closed, innerClosed;
+
+    protected Statistics statistics;
+
+    protected boolean loopback; //是否回送
+
+    @Override
     public long getSessionIdleTimeout() {
         return this.sessionIdleTimeout;
     }
 
-
+    @Override
     public void setSessionIdleTimeout(final long sessionIdleTimeout) {
         this.sessionIdleTimeout = sessionIdleTimeout;
     }
 
-
+    @Override
     public long getSessionTimeout() {
         return this.sessionTimeout;
     }
 
-
+    @Override
     public void setSessionTimeout(final long sessionTimeout) {
         this.sessionTimeout = sessionTimeout;
     }
@@ -94,7 +119,7 @@ public abstract class AbstractSession implements Session {
         return this.statistics;
     }
 
-
+    @Override
     public Handler getHandler() {
         return this.handler;
     }
@@ -109,27 +134,6 @@ public abstract class AbstractSession implements Session {
         return this.writeLock;
     }
 
-    protected CodecFactory.Encoder encoder;
-    protected CodecFactory.Decoder decoder;
-
-    protected volatile boolean closed, innerClosed;
-
-    protected Statistics statistics;
-
-    protected Handler handler;
-
-    protected boolean loopback;
-
-    public AtomicLong lastOperationTimeStamp = new AtomicLong(0);
-
-    protected AtomicLong scheduleWritenBytes = new AtomicLong(0);
-
-    protected final Dispatcher dispatchMessageDispatcher;
-    protected volatile boolean useBlockingWrite = false;
-    protected volatile boolean useBlockingRead = true;
-    protected volatile boolean handleReadWriteConcurrently = true;
-
-
     public abstract void decode();
 
 
@@ -137,37 +141,37 @@ public abstract class AbstractSession implements Session {
         this.lastOperationTimeStamp.set(System.currentTimeMillis());
     }
 
-
+    @Override
     public long getLastOperationTimeStamp() {
         return this.lastOperationTimeStamp.get();
     }
 
-
+    @Override
     public final boolean isHandleReadWriteConcurrently() {
         return this.handleReadWriteConcurrently;
     }
 
-
+    @Override
     public final void setHandleReadWriteConcurrently(final boolean handleReadWriteConcurrently) {
         this.handleReadWriteConcurrently = handleReadWriteConcurrently;
     }
 
-
+    @Override
     public long getScheduleWritenBytes() {
         return this.scheduleWritenBytes.get();
     }
 
-
+    @Override
     public CodecFactory.Encoder getEncoder() {
         return this.encoder;
     }
 
-
+    @Override
     public void setEncoder(final CodecFactory.Encoder encoder) {
         this.encoder = encoder;
     }
 
-
+    @Override
     public CodecFactory.Decoder getDecoder() {
         return this.decoder;
     }
@@ -182,12 +186,12 @@ public abstract class AbstractSession implements Session {
         this.readBuffer = readBuffer;
     }
 
-
+    @Override
     public void setDecoder(final CodecFactory.Decoder decoder) {
         this.decoder = decoder;
     }
 
-
+    @Override
     public final ByteOrder getReadBufferByteOrder() {
         if (this.readBuffer == null) {
             throw new IllegalStateException();
@@ -195,7 +199,7 @@ public abstract class AbstractSession implements Session {
         return this.readBuffer.order();
     }
 
-
+    @Override
     public final void setReadBufferByteOrder(final ByteOrder readBufferByteOrder) {
         if (this.readBuffer == null) {
             throw new NullPointerException("Null ReadBuffer");
@@ -302,7 +306,7 @@ public abstract class AbstractSession implements Session {
         }
     }
 
-
+    @Override
     public final boolean isClosed() {
         return this.closed;
     }
@@ -312,7 +316,7 @@ public abstract class AbstractSession implements Session {
         this.closed = closed;
     }
 
-
+    @Override
     public final void close() {
         this.setClosed(true);
         // 加入毒丸到队列
@@ -376,37 +380,37 @@ public abstract class AbstractSession implements Session {
         }
     }
 
-
+    @Override
     public void setAttribute(final String key, final Object value) {
         this.attributes.put(key, value);
     }
 
-
+    @Override
     public Set<String> attributeKeySet() {
         return this.attributes.keySet();
     }
 
-
+    @Override
     public Object setAttributeIfAbsent(final String key, final Object value) {
         return this.attributes.putIfAbsent(key, value);
     }
 
-
+    @Override
     public void removeAttribute(final String key) {
         this.attributes.remove(key);
     }
 
-
+    @Override
     public Object getAttribute(final String key) {
         return this.attributes.get(key);
     }
 
-
+    @Override
     public void clearAttributes() {
         this.attributes.clear();
     }
 
-
+    @Override
     public synchronized void start() {
         log.debug("session started");
         this.onStarted();
@@ -425,10 +429,6 @@ public abstract class AbstractSession implements Session {
             this.onException(e);
         }
     }
-
-    protected ReentrantLock writeLock = new ReentrantLock();
-
-    protected AtomicReference<WriteMessage> currentMessage = new AtomicReference<WriteMessage>();
 
     static final class FailFuture implements Future<Boolean> {
 
@@ -459,7 +459,7 @@ public abstract class AbstractSession implements Session {
 
     }
 
-
+    @Override
     public Future<Boolean> asyncWrite(final Object packet) {
         if (this.isClosed()) {
             final FutureImpl<Boolean> writeFuture = new FutureImpl<Boolean>();
@@ -476,7 +476,7 @@ public abstract class AbstractSession implements Session {
         return writeFuture;
     }
 
-
+    @Override
     public void write(final Object packet) {
         if (packet == null) {
             throw new NullPointerException("Null packet");
@@ -492,27 +492,27 @@ public abstract class AbstractSession implements Session {
 
     protected abstract void writeFromUserCode(WriteMessage message);
 
-
+    @Override
     public final boolean isLoopbackConnection() {
         return this.loopback;
     }
 
-
+    @Override
     public boolean isUseBlockingWrite() {
         return this.useBlockingWrite;
     }
 
-
+    @Override
     public void setUseBlockingWrite(final boolean useBlockingWrite) {
         this.useBlockingWrite = useBlockingWrite;
     }
 
-
+    @Override
     public boolean isUseBlockingRead() {
         return this.useBlockingRead;
     }
 
-
+    @Override
     public void setUseBlockingRead(final boolean useBlockingRead) {
         this.useBlockingRead = useBlockingRead;
     }
@@ -522,12 +522,12 @@ public abstract class AbstractSession implements Session {
         this.writeQueue.clear();
     }
 
-
+    @Override
     public boolean isExpired() {
         return false;
     }
 
-
+    @Override
     public boolean isIdle() {
         final long lastOpTimestamp = this.getLastOperationTimeStamp();
         return lastOpTimestamp > 0 && System.currentTimeMillis() - lastOpTimestamp > this.sessionIdleTimeout;
@@ -545,7 +545,7 @@ public abstract class AbstractSession implements Session {
         this.dispatchMessageDispatcher = sessionConfig.dispatchMessageDispatcher;
         this.handleReadWriteConcurrently = sessionConfig.handleReadWriteConcurrently;
         this.sessionTimeout = sessionConfig.sessionTimeout;
-        this.sessionIdleTimeout = sessionConfig.sessionIdelTimeout;
+        this.sessionIdleTimeout = sessionConfig.sessionIdleTimeout;
     }
 
 

@@ -38,6 +38,9 @@ import com.taobao.gecko.core.util.PositiveAtomicCounter;
  * @since 1.0, 2009-12-16 下午06:10:59
  */
 public class SelectorManager {
+
+    public static final String REACTOR_ATTRIBUTE = System.currentTimeMillis() + "_Reactor_Attribute";
+
     private final Reactor[] reactorSet;
     private final PositiveAtomicCounter sets = new PositiveAtomicCounter();
     private final NioController controller;
@@ -48,6 +51,7 @@ public class SelectorManager {
      */
     private int reactorReadyCount;
 
+    private volatile boolean started;
 
     public SelectorManager(final int selectorPoolSize, final NioController controller, final Configuration conf)
             throws IOException {
@@ -63,8 +67,6 @@ public class SelectorManager {
         }
         this.dividend = this.reactorSet.length - 1;
     }
-
-    private volatile boolean started;
 
 
     public int getSelectorCount() {
@@ -107,9 +109,6 @@ public class SelectorManager {
         }
     }
 
-    public static final String REACTOR_ATTRIBUTE = System.currentTimeMillis() + "_Reactor_Attribute";
-
-
     /**
      * 注册channel
      * 
@@ -121,15 +120,18 @@ public class SelectorManager {
     public final Reactor registerChannel(final SelectableChannel channel, final int ops, final Object attachment) {
         this.awaitReady();
         int index = 0;
+        //如果是accept或connect类型的selectionKey，分配第一个reactor
         // Accept单独一个Reactor
         if (ops == SelectionKey.OP_ACCEPT || ops == SelectionKey.OP_CONNECT) {
             index = 0;
         }
+        //如果是其他类型的selectionKey
         else {
+            //如果设置了两个以上的reactor，第一个特殊用了，在剩下的里面轮询注册
             if (this.dividend > 0) {
                 index = this.sets.incrementAndGet() % this.dividend + 1;
             }
-            else {
+            else { //如果只有一个reactor那就只能用他注册了
                 index = 0;
             }
         }
@@ -142,6 +144,7 @@ public class SelectorManager {
 
     void awaitReady() {
         synchronized (this) {
+            //如果未启动或者没有全部准备，那就循环等待，每次1s
             while (!this.started || this.reactorReadyCount != this.reactorSet.length) {
                 try {
                     this.wait(1000);
@@ -170,7 +173,7 @@ public class SelectorManager {
 
 
     /**
-     * 注册连接事件
+     * session 注册连接事件
      * 
      * @param session
      * @param event
@@ -188,9 +191,10 @@ public class SelectorManager {
         Reactor reactor = (Reactor) session.getAttribute(REACTOR_ATTRIBUTE);
 
         if (reactor == null) {
+            //如果当前session中没有reactor则取下一个reactor，并设置到session中
             reactor = this.nextReactor();
             final Reactor oldReactor = (Reactor) session.setAttributeIfAbsent(REACTOR_ATTRIBUTE, reactor);
-            if (oldReactor != null) {
+            if (oldReactor != null) { //这步相当于再次检查
                 reactor = oldReactor;
             }
         }
@@ -227,7 +231,7 @@ public class SelectorManager {
         return this.controller;
     }
 
-
+    //通知准备好了，如果全部准备好，通知所有
     synchronized void notifyReady() {
         this.reactorReadyCount++;
         if (this.reactorReadyCount == this.reactorSet.length) {
