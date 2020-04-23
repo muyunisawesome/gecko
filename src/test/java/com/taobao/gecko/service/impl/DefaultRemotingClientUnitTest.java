@@ -170,7 +170,7 @@ public class DefaultRemotingClientUnitTest {
                 this.remotingClient.getRemotingContext().getConnectionsByGroup(Constants.DEFAULT_GROUP);
         if (connetionList != null) {
             for (final Connection conn : connetionList) {
-                Assert.assertEquals(0, ((DefaultConnection) conn).getRequstCallBackCount());
+                Assert.assertEquals(0, ((DefaultConnection) conn).getRequestCallBackCount());
             }
         }
     }

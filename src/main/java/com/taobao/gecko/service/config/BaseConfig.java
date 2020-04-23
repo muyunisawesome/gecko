@@ -19,8 +19,7 @@ import com.taobao.gecko.core.util.SystemUtils;
 
 
 /**
- * 
- * 
+ * 网络层配置对象
  * 
  * @author boyan
  * 
@@ -68,7 +67,7 @@ public class BaseConfig {
      */
     private int readThreadCount = (int) (2.5f * SystemUtils.getCpuProcessorCount());
     /**
-     * 处理消息的线程数
+     * 派发消息的线程数
      */
     private int dispatchMessageThreadCount = 0;
     /**

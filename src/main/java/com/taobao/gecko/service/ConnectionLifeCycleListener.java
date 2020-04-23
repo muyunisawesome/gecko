@@ -25,7 +25,7 @@ package com.taobao.gecko.service;
 public interface ConnectionLifeCycleListener {
 
     /**
-     * 当连接建立时回调，还未加入所在分组
+     * 当连接建立时回调（还未加入所在分组）
      *
      * @param conn
      */
@@ -33,7 +33,7 @@ public interface ConnectionLifeCycleListener {
 
 
     /**
-     * 连接就绪，已经加入所在分组，只对客户端有意义
+     * 连接就绪（已经加入所在分组，只对客户端有意义）
      *
      * @param conn
      */

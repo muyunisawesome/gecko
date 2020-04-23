@@ -21,9 +21,9 @@ import com.taobao.gecko.core.command.RequestCommand;
 
 
 /**
- * 
- * 
- * 请求处理器
+ * 请求处理器<br>
+ *
+ * 后面的泛型，用来指定处理的Command类型
  * 
  * @author boyan
  * 

@@ -294,7 +294,7 @@ public class DefaultRemotingServerUnitTest {
         final List<Connection> connetionList =
                 this.remotingServer.getRemotingContext().getConnectionsByGroup(Constants.DEFAULT_GROUP);
         for (final Connection conn : connetionList) {
-            Assert.assertEquals(0, ((DefaultConnection) conn).getRequstCallBackCount());
+            Assert.assertEquals(0, ((DefaultConnection) conn).getRequestCallBackCount());
         }
     }
 

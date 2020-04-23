@@ -1,12 +1,12 @@
 /*
  * (C) 2007-2012 Alibaba Group Holding Limited.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,29 +44,20 @@ import java.util.concurrent.TimeoutException;
 
 
 /**
- * 
  * 连接的封装
- * 
+ *
  * @author boyan
- * 
  * @since 1.0, 2009-12-15 下午02:47:00
  */
 
 public class DefaultConnection implements Connection {
+
     static final Log log = LogFactory.getLog(DefaultConnection.class);
 
     /**
-     * 是否启用可中断写。如果启用，那么就可能在用户线程做IO写入操作，但是用户线程的中断会引起连接断开，请慎重使用。默认不启用。
-     */
-    private boolean writeInterruptibly = false;
-
-    /**
      * 单连接请求的超时任务
-     * 
-     * 
-     * 
+     *
      * @author boyan
-     * 
      * @since 1.0, 2009-12-18 下午03:00:55
      */
     private static final class SingleRequestCallBackRunner implements Runnable {
@@ -86,8 +77,8 @@ public class DefaultConnection implements Connection {
             final DefaultConnection defaultConnection = (DefaultConnection) SingleRequestCallBackRunner.this.connection;
             final BooleanAckCommand timeoutCommand =
                     defaultConnection.createTimeoutCommand(
-                        SingleRequestCallBackRunner.this.requestCallBack.getRequestCommandHeader(),
-                        SingleRequestCallBackRunner.this.connection.getRemoteSocketAddress());
+                            SingleRequestCallBackRunner.this.requestCallBack.getRequestCommandHeader(),
+                            SingleRequestCallBackRunner.this.connection.getRemoteSocketAddress());
             this.requestCallBack.cancelWrite(this.connection);
             this.requestCallBack.onResponse(null, timeoutCommand, this.connection);
         }
@@ -97,23 +88,17 @@ public class DefaultConnection implements Connection {
     private BooleanAckCommand createTimeoutCommand(final CommandHeader header, final InetSocketAddress address) {
         final BooleanAckCommand value =
                 this.remotingContext.getCommandFactory().createBooleanAckCommand(header, ResponseStatus.TIMEOUT,
-                    "等待响应超时");
+                        "等待响应超时");
         value.setResponseStatus(ResponseStatus.TIMEOUT);
         value.setResponseTime(System.currentTimeMillis());
         value.setResponseHost(address);
         return value;
     }
 
-
-    public void setWriteInterruptibly(final boolean writeInterruptibly) {
-        this.writeInterruptibly = writeInterruptibly;
-    }
-
-
-    @Override
-    public String toString() {
-        return RemotingUtils.getAddrString(this.getRemoteSocketAddress());
-    }
+    /**
+     * 是否启用可中断写。如果启用，那么就可能在用户线程做IO写入操作，但是用户线程的中断会引起连接断开，请慎重使用。默认不启用。
+     */
+    private boolean writeInterruptibly = false;
 
     /**
      * 是否允许重连
@@ -121,7 +106,7 @@ public class DefaultConnection implements Connection {
     private volatile boolean allowReconnect = true;
 
     /**
-     * 用来给客户端判断连接是否继续，连接就绪的含义是指RemotingClient.connect调用后，连接成功建立并且加入了指定的分组
+     * 用来给客户端判断连接是否就绪，连接就绪的含义是指RemotingClient.connect调用后，连接成功建立并且加入了指定的分组
      */
     private volatile boolean ready;
 
@@ -136,14 +121,32 @@ public class DefaultConnection implements Connection {
     private final ConcurrentHashMap<Integer/* opaque */, String/* group */> opaque2group =
             new ConcurrentHashMap<Integer, String>(128);
 
+    private final NioSession session;
+    private final DefaultRemotingContext remotingContext;
+
+    //用来记录请求回调
+    private final ConcurrentHashMap<Integer, RequestCallBack> requestCallBackMap =
+            new ConcurrentHashMap<Integer, RequestCallBack>();
+
+    public DefaultConnection(final NioSession ioSession, final DefaultRemotingContext remotingContext) {
+        this.session = ioSession;
+        this.remotingContext = remotingContext;
+        // 设置session的连接属性
+        this.session.setAttribute(Constants.CONNECTION_ATTR, this);
+    }
+
+    public void setWriteInterruptibly(final boolean writeInterruptibly) {
+        this.writeInterruptibly = writeInterruptibly;
+    }
+
+    @Override
+    public String toString() {
+        return RemotingUtils.getAddrString(this.getRemoteSocketAddress());
+    }
 
     public boolean isConnected() {
         return !this.session.isClosed();
     }
-
-    private final NioSession session;
-    private final DefaultRemotingContext remotingContext;
-
 
     void addGroup(final String group) {
         this.groupSet.add(group);
@@ -161,37 +164,71 @@ public class DefaultConnection implements Connection {
 
 
     // 释放资源，让callback超时
-    void dispose() {
+    public void dispose() {
         for (final Integer opaque : this.requestCallBackMap.keySet()) {
             final RequestCallBack requestCallBack = this.requestCallBackMap.get(opaque);
             // 让callBack超时
             if (requestCallBack != null) {
                 requestCallBack.onResponse(this.removeOpaqueToGroupMapping(opaque),
-                    this.createTimeoutCommand(new CommandHeader() {
-                        public Integer getOpaque() {
-                            return opaque;
-                        }
-                    }, this.getRemoteSocketAddress()), this);
+                        this.createTimeoutCommand(new CommandHeader() {
+                            public Integer getOpaque() {
+                                return opaque;
+                            }
+                        }, this.getRemoteSocketAddress()), this);
             }
 
         }
     }
 
-
-    public ByteOrder readBufferOrder() {
+    public ByteOrder getReadBufferOrder() {
         return this.session.getReadBufferByteOrder();
     }
 
 
-    public void readBufferOrder(final ByteOrder byteOrder) {
+    public void setReadBufferOrder(final ByteOrder byteOrder) {
         this.session.setReadBufferByteOrder(byteOrder);
     }
 
+    boolean isAllowReconnect() {
+        return this.allowReconnect;
+    }
+
+    void setAllowReconnect(final boolean allowReconnect) {
+        this.allowReconnect = allowReconnect;
+    }
+
+    public boolean isNotReady() {
+        return !this.ready;
+    }
+
+    public void setReady(final boolean ready) {
+        this.ready = ready;
+    }
+
+    public void addRequestCallBack(final Integer opaque, final RequestCallBack requestCallBack) throws NotifyRemotingException {
+        if (!this.remotingContext.aquire()) {
+            throw new NotifyRemotingException("超过允许的最大CallBack个数["
+                    + this.remotingContext.getConfig().getMaxCallBackCount() + "]");
+        }
+        if (this.requestCallBackMap.containsKey(opaque)) {
+            this.remotingContext.release();
+            throw new NotifyRemotingException("请不要重复发送同一个命令到同一个连接");
+        }
+        this.requestCallBackMap.put(opaque, requestCallBack);
+    }
+
+    public RequestCallBack removeRequestCallBack(final Integer opaque) {
+        final RequestCallBack removed = this.requestCallBackMap.remove(opaque);
+        if (removed != null) {
+            this.remotingContext.release();
+        }
+        return removed;
+    }
 
     /**
      * 移除所有无效的请求回调
      */
-    void removeAllInvalidRequestCallBack() {
+    public void removeAllInvalidRequestCallBack() {
         final Set<Integer> removedOpaqueSet = new HashSet<Integer>();
         final long now = System.currentTimeMillis();
         for (final Map.Entry<Integer, RequestCallBack> entry : this.requestCallBackMap.entrySet()) {
@@ -206,11 +243,11 @@ public class DefaultConnection implements Connection {
             if (requestCallBack != null && requestCallBack.isInvalid(now)) {
                 // 让callBack超时
                 requestCallBack.onResponse(this.removeOpaqueToGroupMapping(opaque),
-                    this.createTimeoutCommand(new CommandHeader() {
-                        public Integer getOpaque() {
-                            return opaque;
-                        }
-                    }, this.getRemoteSocketAddress()), this);
+                        this.createTimeoutCommand(new CommandHeader() {
+                            public Integer getOpaque() {
+                                return opaque;
+                            }
+                        }, this.getRemoteSocketAddress()), this);
                 count++;
             }
         }
@@ -220,35 +257,38 @@ public class DefaultConnection implements Connection {
 
     }
 
-
-    boolean isAllowReconnect() {
-        return this.allowReconnect;
+    public RequestCallBack getRequestCallBack(final Integer opaque) {
+        return this.requestCallBackMap.get(opaque);
     }
-
-
-    void setAllowReconnect(final boolean allowReconnect) {
-        this.allowReconnect = allowReconnect;
-    }
-
-
-    public boolean isReady() {
-        return this.ready;
-    }
-
-
-    void setReady(final boolean ready) {
-        this.ready = ready;
-    }
-
 
     private void checkFlow() throws NotifyRemotingException {
         if (this.session.getScheduleWritenBytes() > this.remotingContext.getConfig().getMaxScheduleWrittenBytes()) {
             throw new NotifyRemotingException("发送消息失败，超过流量限制["
-                    + this.remotingContext.getConfig().getMaxScheduleWrittenBytes() + "字节],remoteAddr:"+RemotingUtils.getAddrString(session.getRemoteSocketAddress()));
+                    + this.remotingContext.getConfig().getMaxScheduleWrittenBytes() + "字节],remoteAddr:" + RemotingUtils.getAddrString(session.getRemoteSocketAddress()));
         }
     }
 
+    /**
+     * 移除opaque到group的映射，仅用于多分组发送
+     *
+     * @param opaque 应答
+     * @return 移除的应答对应的组名
+     */
+    public String removeOpaqueToGroupMapping(final Integer opaque) {
+        return this.opaque2group.remove(opaque);
+    }
 
+    /**
+     * 添加opaque到group的映射，仅用于多分组发送
+     *
+     * @param opaque 应答
+     * @param group 分组
+     */
+    public void addOpaqueToGroupMapping(final Integer opaque, final String group) {
+        this.opaque2group.put(opaque, group);
+    }
+
+    @Override
     public ResponseCommand invoke(final RequestCommand requestCommand, final long time, final TimeUnit timeUnit)
             throws InterruptedException, TimeoutException, NotifyRemotingException {
         if (requestCommand == null) {
@@ -257,85 +297,32 @@ public class DefaultConnection implements Connection {
         this.checkFlow();
         final SingleRequestCallBack requestCallBack =
                 new SingleRequestCallBack(requestCommand.getRequestHeader(), TimeUnit.MILLISECONDS.convert(time,
-                    timeUnit));
+                        timeUnit));
         this.addRequestCallBack(requestCommand.getOpaque(), requestCallBack);
         try {
             requestCallBack.addWriteFuture(this, this.asyncWriteToSession(requestCommand));
-        }
-        catch (final Throwable t) {
+        } catch (final Throwable t) {
             this.removeRequestCallBack(requestCommand.getOpaque());
             throw new NotifyRemotingException(t);
         }
         return requestCallBack.getResult(time, timeUnit, this);
     }
 
-    private final ConcurrentHashMap<Integer, RequestCallBack> requestCallBackMap =
-            new ConcurrentHashMap<Integer, RequestCallBack>();
-
-
-    void addRequestCallBack(final Integer opaque, final RequestCallBack requestCallBack) throws NotifyRemotingException {
-        if (!this.remotingContext.aquire()) {
-            throw new NotifyRemotingException("超过允许的最大CallBack个数["
-                    + this.remotingContext.getConfig().getMaxCallBackCount() + "]");
-        }
-        if (this.requestCallBackMap.containsKey(opaque)) {
-            this.remotingContext.release();
-            throw new NotifyRemotingException("请不要重复发送同一个命令到同一个连接");
-        }
-        this.requestCallBackMap.put(opaque, requestCallBack);
-    }
-
-
-    public RequestCallBack getRequestCallBack(final Integer opaque) {
-        return this.requestCallBackMap.get(opaque);
-    }
-
-
-    public RequestCallBack removeRequestCallBack(final Integer opaque) {
-        final RequestCallBack removed = this.requestCallBackMap.remove(opaque);
-        if (removed != null) {
-            this.remotingContext.release();
-        }
-        return removed;
-    }
-
-
-    /**
-     * 移除opaque到group的映射，仅用于多分组发送
-     * 
-     * @param opaque
-     * @return
-     */
-    public String removeOpaqueToGroupMapping(final Integer opaque) {
-        return this.opaque2group.remove(opaque);
-    }
-
-
-    /**
-     * 添加opaque到group的映射，仅用于多分组发送
-     * 
-     * @param opaque
-     * @return
-     */
-    void addOpaqueToGroupMapping(final Integer opaque, final String group) {
-        this.opaque2group.put(opaque, group);
-    }
-
-
+    @Override
     public ResponseCommand invoke(final RequestCommand request) throws InterruptedException, TimeoutException,
             NotifyRemotingException {
         return this.invoke(request, 1000L, TimeUnit.MILLISECONDS);
     }
 
-
+    @Override
     public void send(final RequestCommand requestCommand, final SingleRequestCallBackListener listener)
             throws NotifyRemotingException {
         this.send(requestCommand, listener, 1000, TimeUnit.MILLISECONDS);
     }
 
-
+    @Override
     public void send(final RequestCommand requestCommand, final SingleRequestCallBackListener listener,
-            final long time, final TimeUnit timeUnit) throws NotifyRemotingException {
+                     final long time, final TimeUnit timeUnit) throws NotifyRemotingException {
         if (requestCommand == null) {
             throw new NotifyRemotingException("Null message");
         }
@@ -355,8 +342,7 @@ public class DefaultConnection implements Connection {
         try {
             requestCallBack.addWriteFuture(this, this.asyncWriteToSession(requestCommand));
             this.session.insertTimer(timerRef);
-        }
-        catch (final Throwable t) {
+        } catch (final Throwable t) {
             // 切记移除callBack
             this.removeRequestCallBack(requestCommand.getOpaque());
             throw new NotifyRemotingException(t);
@@ -364,7 +350,7 @@ public class DefaultConnection implements Connection {
 
     }
 
-
+    @Override
     public void send(final RequestCommand requestCommand) throws NotifyRemotingException {
         if (requestCommand == null) {
             throw new NotifyRemotingException("Null message");
@@ -372,7 +358,7 @@ public class DefaultConnection implements Connection {
         this.writeToSession(requestCommand);
     }
 
-
+    @Override
     public Future<Boolean> asyncSend(final RequestCommand requestCommand) throws NotifyRemotingException {
         if (requestCommand == null) {
             throw new NotifyRemotingException("Null message");
@@ -385,31 +371,21 @@ public class DefaultConnection implements Connection {
     private Future<Boolean> asyncWriteToSession(final Object packet) {
         if (this.writeInterruptibly) {
             return this.session.asyncWriteInterruptibly(packet);
-        }
-        else {
+        } else {
             return this.session.asyncWrite(packet);
         }
     }
 
-
-    public DefaultConnection(final NioSession ioSession, final DefaultRemotingContext remotingContext) {
-        this.session = ioSession;
-        this.remotingContext = remotingContext;
-        // 设置session的连接属性
-        this.session.setAttribute(Constants.CONNECTION_ATTR, this);
-    }
-
-
-    NioSession getSession() {
+    public NioSession getSession() {
         return this.session;
     }
 
-
+    @Override
     public RemotingContext getRemotingContext() {
         return this.remotingContext;
     }
 
-
+    @Override
     public synchronized void close(final boolean allowReconnect) throws NotifyRemotingException {
         if (!this.isConnected()) {
             return;
@@ -417,53 +393,58 @@ public class DefaultConnection implements Connection {
         this.setAllowReconnect(allowReconnect);
         try {
             this.session.close();
-        }
-        catch (final Exception e) {
+        } catch (final Exception e) {
             throw new NotifyRemotingException(e);
         }
     }
 
-
+    @Override
     public void clearAttributes() {
         this.session.clearAttributes();
     }
 
-
+    @Override
     public Object getAttribute(final String key) {
         return this.session.getAttribute(key);
     }
 
-
+    @Override
     public InetSocketAddress getRemoteSocketAddress() {
         return this.session.getRemoteSocketAddress();
     }
 
-
+    @Override
     public InetAddress getLocalAddress() {
         return this.session.getLocalAddress();
     }
 
-
+    @Override
     public void removeAttribute(final String key) {
         this.session.removeAttribute(key);
     }
 
 
+    @Override
     public void setAttribute(final String key, final Object value) {
         this.session.setAttribute(key, value);
     }
 
+    @Override
+    public Object setAttributeIfAbsent(final String key, final Object value) {
+        return this.session.setAttributeIfAbsent(key, value);
+    }
 
+    @Override
     public Set<String> attributeKeySet() {
         return this.session.attributeKeySet();
     }
 
 
-    int getRequstCallBackCount() {
+    int getRequestCallBackCount() {
         return this.requestCallBackMap.size();
     }
 
-
+    @Override
     public void response(final Object responseCommand) throws NotifyRemotingException {
         this.checkFlow();
         this.writeToSession(responseCommand);
@@ -474,31 +455,24 @@ public class DefaultConnection implements Connection {
         try {
             if (this.writeInterruptibly) {
                 this.session.writeInterruptibly(packet);
-            }
-            else {
+            } else {
                 this.session.write(packet);
             }
-        }
-        catch (final Throwable t) {
+        } catch (final Throwable t) {
             throw new NotifyRemotingException(t);
         }
     }
 
-
-    public Object setAttributeIfAbsent(final String key, final Object value) {
-        return this.session.setAttributeIfAbsent(key, value);
-    }
-
-
+    @Override
     public void transferFrom(final IoBuffer head, final IoBuffer tail, final FileChannel channel, final long position,
-            final long size) {
+                             final long size) {
         this.session.transferFrom(head, tail, channel, position, size);
     }
 
-
+    @Override
     public void transferFrom(final IoBuffer head, final IoBuffer tail, final FileChannel channel, final long position,
-            final long size, final Integer opaque, final SingleRequestCallBackListener listener, final long time,
-            final TimeUnit unit) throws NotifyRemotingException {
+                             final long size, final Integer opaque, final SingleRequestCallBackListener listener, final long time,
+                             final TimeUnit unit) throws NotifyRemotingException {
         if (channel == null) {
             throw new NotifyRemotingException("Null source channel");
         }
@@ -521,8 +495,7 @@ public class DefaultConnection implements Connection {
         try {
             requestCallBack.addWriteFuture(this, this.session.transferFrom(head, tail, channel, position, size));
             this.session.insertTimer(timerRef);
-        }
-        catch (final Throwable t) {
+        } catch (final Throwable t) {
             // 切记移除callBack
             this.removeRequestCallBack(opaque);
             throw new NotifyRemotingException(t);

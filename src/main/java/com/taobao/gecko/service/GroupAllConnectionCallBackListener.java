@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 
 /**
- * 单分组所有连接的回调监听器
+ * 单分组所有连接的回调（应答）监听器
  *
  * @author boyan
  * @since 1.0, 2009-12-16 下午03:26:36
