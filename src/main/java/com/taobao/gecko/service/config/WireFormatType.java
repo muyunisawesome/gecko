@@ -31,7 +31,7 @@ import java.util.Map;
 
 public abstract class WireFormatType {
 
-    private static Map<String, WireFormatType> registeredWireFormatType = new HashMap<String, WireFormatType>();
+    private static Map<String, WireFormatType> registeredWireFormatType = new HashMap<>();
 
 
     /**
@@ -59,6 +59,9 @@ public abstract class WireFormatType {
         registeredWireFormatType.remove(wireFormatType.name());
     }
 
+    /**
+     * 获取协议类型
+     */
     public static WireFormatType valueOf(final String name) {
         return registeredWireFormatType.get(name);
 
