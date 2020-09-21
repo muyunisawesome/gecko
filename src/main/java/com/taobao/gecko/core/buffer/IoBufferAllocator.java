@@ -46,6 +46,7 @@ import java.nio.ByteBuffer;
  *          $
  */
 public interface IoBufferAllocator {
+
     /**
      * Returns the buffer which is capable of the specified size.
      * 

@@ -72,6 +72,7 @@ import java.util.Set;
  * @see IoBufferAllocator
  */
 public abstract class AbstractIoBuffer extends IoBuffer {
+    
     /** Tells if a buffer has been created from an existing buffer */
     private final boolean derived;
 

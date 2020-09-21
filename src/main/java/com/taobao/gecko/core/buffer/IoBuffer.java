@@ -72,13 +72,13 @@ import java.util.Set;
  * You can allocate a new heap buffer.
  * 
  * <pre>
- * IoBuffer buf = IoBuffer.allocate(1024, false);
+ * IoBuffer buf = IoBuffer.allocate(1024, false); 堆内buffer
  * </pre>
  * 
  * you can also allocate a new direct buffer:
  * 
  * <pre>
- * IoBuffer buf = IoBuffer.allocate(1024, true);
+ * IoBuffer buf = IoBuffer.allocate(1024, true); 堆外直接buffer
  * </pre>
  * 
  * or you can set the default buffer type.
